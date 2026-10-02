@@ -24,6 +24,6 @@
 </section>{{end}}{{end}}
 
 {{define "foot"}}</main>
-<footer class="foot">Managed by {{.Org}} with Orchard MDM</footer>
+<footer class="foot">{{if eq .Org "Orchard MDM"}}Managed with Orchard MDM{{else}}Managed by {{.Org}} with Orchard MDM{{end}}</footer>
 </body>
 </html>{{end}}
