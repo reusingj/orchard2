@@ -15,10 +15,10 @@ import (
 	"testing"
 
 	"github.com/smallstep/pkcs7"
-	"github.com/yeungalan/orchard-mdm/internal/dep"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
-	"github.com/yeungalan/orchard-mdm/internal/testenv"
+	"github.com/reusingj/orchard2/internal/dep"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
+	"github.com/reusingj/orchard2/internal/testenv"
 	"howett.net/plist"
 )
 
@@ -158,3 +158,4 @@ func TestADEFlow(t *testing.T) {
 		t.Fatalf("unknown serial allowed: %d", rr.Code)
 	}
 }
+

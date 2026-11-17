@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 // Kinds of declarations.
@@ -364,3 +364,4 @@ func deepMerge(dst, src map[string]any) {
 		dst[k] = v
 	}
 }
+

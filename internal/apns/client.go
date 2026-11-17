@@ -16,8 +16,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
 	"golang.org/x/net/http2"
 )
 
@@ -226,3 +226,4 @@ func (m *Manager) CertInfo() Info {
 		AppleID:    meta.AppleID,
 	}
 }
+

@@ -7,14 +7,14 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/yeungalan/orchard-mdm/internal/compliance"
-	"github.com/yeungalan/orchard-mdm/internal/ddm"
-	"github.com/yeungalan/orchard-mdm/internal/devicesim"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/profiles"
-	"github.com/yeungalan/orchard-mdm/internal/reconcile"
-	"github.com/yeungalan/orchard-mdm/internal/store"
-	"github.com/yeungalan/orchard-mdm/internal/testenv"
+	"github.com/reusingj/orchard2/internal/compliance"
+	"github.com/reusingj/orchard2/internal/ddm"
+	"github.com/reusingj/orchard2/internal/devicesim"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/profiles"
+	"github.com/reusingj/orchard2/internal/reconcile"
+	"github.com/reusingj/orchard2/internal/store"
+	"github.com/reusingj/orchard2/internal/testenv"
 )
 
 func setup(t *testing.T) (*testenv.Env, *reconcile.Reconciler, *devicesim.Device) {
@@ -172,3 +172,4 @@ func TestDynamicRules(t *testing.T) {
 		}
 	}
 }
+

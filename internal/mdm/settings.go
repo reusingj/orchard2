@@ -8,12 +8,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 // Setting keys shared across packages.
 const (
 	SettingOrgName             = "org_name"
+	SettingOrgNameAbbreviation = "org_name_abbreviation"
+	SettingOrgCountryCode	   = "org_country_code"
 	SettingPublicURL           = "public_url"
 	SettingSupportEmail        = "support_email"
 	SettingSupportPhone        = "support_phone"
@@ -39,7 +41,9 @@ const (
 
 // SettingDefaults are applied when a key is unset.
 var SettingDefaults = map[string]string{
-	SettingOrgName:             "Orchard MDM",
+	SettingOrgName:             "Default Organization",
+	SettingOrgNameAbbreviation: "Acme",
+	SettingOrgCountryCode: 		"us",
 	SettingEnrollRequireToken:  "1",
 	SettingInventoryHours:      "4",
 	SettingTelemetryMinutes:    "60",
@@ -114,6 +118,8 @@ func (s *Service) Vars(d *store.Device) map[string]string {
 		"user.name":            d.AssignedUser,
 		"user.email":           d.AssignedEmail,
 		"org.name":             s.Setting(SettingOrgName),
+		"org.name_abbreviation":s.Setting(SettingOrgNameAbbreviation),
+		"org.country_code":		s.Setting(SettingOrgCountryCode),
 		"server.url":           s.PublicURL(),
 		"server.agent_url":     s.PublicURL() + "/agent/v1/report",
 	}
@@ -262,3 +268,4 @@ func jsonString(v any) string {
 	}
 	return string(b)
 }
+

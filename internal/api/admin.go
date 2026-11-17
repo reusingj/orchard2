@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/apns"
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
-	"github.com/yeungalan/orchard-mdm/internal/vpp"
+	"github.com/reusingj/orchard2/internal/apns"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
+	"github.com/reusingj/orchard2/internal/vpp"
 )
 
 func decodeB64(s, what string) ([]byte, error) {
@@ -1015,3 +1015,4 @@ func (a *API) dashboard(w http.ResponseWriter, r *http.Request, p *Principal) er
 		"attention": map[string]any{"low_battery": nonEmpty(lowBattery), "low_storage": nonEmpty(lowStorage), "stale": nonEmpty(stale), "lost_mode": nonEmpty(lost)},
 	})
 }
+

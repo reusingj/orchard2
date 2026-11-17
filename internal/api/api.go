@@ -14,17 +14,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/apns"
-	"github.com/yeungalan/orchard-mdm/internal/apps"
-	"github.com/yeungalan/orchard-mdm/internal/compliance"
-	"github.com/yeungalan/orchard-mdm/internal/config"
-	"github.com/yeungalan/orchard-mdm/internal/ddm"
-	"github.com/yeungalan/orchard-mdm/internal/dep"
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/reconcile"
-	"github.com/yeungalan/orchard-mdm/internal/store"
-	"github.com/yeungalan/orchard-mdm/internal/webhook"
+	"github.com/reusingj/orchard2/internal/apns"
+	"github.com/reusingj/orchard2/internal/apps"
+	"github.com/reusingj/orchard2/internal/compliance"
+	"github.com/reusingj/orchard2/internal/config"
+	"github.com/reusingj/orchard2/internal/ddm"
+	"github.com/reusingj/orchard2/internal/dep"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/reconcile"
+	"github.com/reusingj/orchard2/internal/store"
+	"github.com/reusingj/orchard2/internal/webhook"
 )
 
 // Deps are the services the API needs.
@@ -390,3 +390,4 @@ func (a *API) Register(mux *http.ServeMux) {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "unknown API endpoint " + r.Method + " " + r.URL.Path})
 	})
 }
+

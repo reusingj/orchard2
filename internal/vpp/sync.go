@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/apps"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/apps"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 // SyncToken refreshes the asset list of a stored token and enriches names
@@ -63,3 +63,4 @@ func SyncToken(ctx context.Context, st *store.Store, baseURL string, it *apps.IT
 	}
 	return len(out), nil
 }
+

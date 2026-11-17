@@ -97,3 +97,4 @@ func (s *Store) ListAccountEnrollments(limit int) ([]*AccountEnrollment, error) 
 func (s *Store) PruneAccountEnrollments(maxAge int64) {
 	_, _ = s.db.Exec(`DELETE FROM account_enrollments WHERE device_id='' AND created_at<?`, Now()-maxAge)
 }
+

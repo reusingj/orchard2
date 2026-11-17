@@ -25,8 +25,8 @@ import (
 	"github.com/smallstep/pkcs7"
 	"github.com/smallstep/scep"
 	"github.com/smallstep/scep/x509util"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/pki"
 	"howett.net/plist"
 )
 
@@ -657,3 +657,4 @@ func (d *Device) AddApp(bundleID, name, version string, managed bool) {
 	defer d.mu.Unlock()
 	d.apps[bundleID] = &App{Identifier: bundleID, Name: name, Version: version, Managed: managed}
 }
+

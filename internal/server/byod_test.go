@@ -19,11 +19,11 @@ import (
 	"time"
 
 	jose "github.com/go-jose/go-jose/v4"
-	"github.com/yeungalan/orchard-mdm/internal/apns"
-	"github.com/yeungalan/orchard-mdm/internal/config"
-	"github.com/yeungalan/orchard-mdm/internal/devicesim"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/apns"
+	"github.com/reusingj/orchard2/internal/config"
+	"github.com/reusingj/orchard2/internal/devicesim"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 func newTestApp(t *testing.T) (*App, *httptest.Server, *client) {
@@ -265,3 +265,4 @@ func mustJSON(v any) string {
 	b, _ := json.Marshal(v)
 	return string(b)
 }
+

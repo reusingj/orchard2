@@ -16,10 +16,10 @@ import (
 	"time"
 
 	"github.com/smallstep/pkcs7"
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
 	"howett.net/plist"
 )
 
@@ -451,3 +451,4 @@ func (s *Service) AssignServiceDiscovery(ctx context.Context, id int64) (string,
 	_ = s.store.SetSetting(fmt.Sprintf("ade_service_discovery_%d", id), u)
 	return u, nil
 }
+

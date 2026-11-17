@@ -1,4 +1,4 @@
-module github.com/yeungalan/orchard-mdm
+module github.com/reusingj/orchard2
 
 go 1.26.0
 
@@ -28,3 +28,4 @@ require (
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 )
+

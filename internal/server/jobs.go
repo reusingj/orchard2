@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/store"
-	"github.com/yeungalan/orchard-mdm/internal/vpp"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/store"
+	"github.com/reusingj/orchard2/internal/vpp"
 )
 
 type job struct {
@@ -199,3 +199,4 @@ func (a *App) jobMaintenance(context.Context) {
 		a.Log.Warn(msg)
 	}
 }
+

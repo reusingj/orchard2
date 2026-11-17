@@ -4,10 +4,10 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/yeungalan/orchard-mdm/internal/devicesim"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/store"
-	"github.com/yeungalan/orchard-mdm/internal/testenv"
+	"github.com/reusingj/orchard2/internal/devicesim"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/store"
+	"github.com/reusingj/orchard2/internal/testenv"
 )
 
 func enroll(t *testing.T, env *testenv.Env, ref string) *devicesim.Device {
@@ -169,3 +169,4 @@ func TestBadChallengeRejected(t *testing.T) {
 		t.Fatal("challenge was accepted twice")
 	}
 }
+

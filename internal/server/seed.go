@@ -1,10 +1,10 @@
 package server
 
 import (
-	"github.com/yeungalan/orchard-mdm/internal/api"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/profiles"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/api"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/profiles"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 const portalProfileIdentifier = "com.orchardmdm.portal"
@@ -57,3 +57,4 @@ func (a *App) seedPortalProfile() error {
 	}
 	return a.Store.UpsertAssignment(&store.Assignment{ItemType: "profile", ItemID: p.ID, GroupID: a.Store.AllDevicesGroupID(), Intent: "install"})
 }
+

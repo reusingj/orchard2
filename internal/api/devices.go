@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/ddm"
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/ddm"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/store"
 	"howett.net/plist"
 )
 
@@ -703,3 +703,4 @@ func (a *API) cancelCommand(w http.ResponseWriter, r *http.Request, p *Principal
 }
 
 var errNotStatic = errors.New("not a static group")
+

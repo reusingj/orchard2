@@ -15,8 +15,8 @@ import (
 	"slices"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 // Dispatcher posts events to configured webhooks.
@@ -137,3 +137,4 @@ func (d *Dispatcher) Test(h *store.Webhook) (int, error) {
 	d.store.RecordWebhookDelivery(h.ID, status, errText)
 	return status, err
 }
+

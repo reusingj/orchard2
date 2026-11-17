@@ -35,3 +35,4 @@ func Handler() http.Handler {
 		_, _ = w.Write(index)
 	})
 }
+

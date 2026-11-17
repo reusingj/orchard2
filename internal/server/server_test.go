@@ -13,11 +13,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yeungalan/orchard-mdm/internal/apns"
-	"github.com/yeungalan/orchard-mdm/internal/config"
-	"github.com/yeungalan/orchard-mdm/internal/devicesim"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/apns"
+	"github.com/reusingj/orchard2/internal/config"
+	"github.com/reusingj/orchard2/internal/devicesim"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 type client struct {
@@ -233,3 +233,4 @@ func TestFullStack(t *testing.T) {
 	}
 	resp.Body.Close()
 }
+

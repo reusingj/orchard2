@@ -392,7 +392,7 @@ var Schemas = []Schema{
 		Description: "Arrange the Dock and Home Screen pages (supervised).",
 		Fields: []Field{
 			{Key: "Dock", Label: "Dock apps (bundle IDs)", Type: "dock", Help: "e.g. com.apple.mobilephone"},
-			{Key: "Pages", Label: "Pages", Type: "pages", Help: "One bundle ID per line; separate pages with an empty line. Folders: “Folder Name: id1, id2”."},
+			{Key: "Pages", Label: "Pages", Type: "pages", Help: "One bundle ID per line; separate pages with an empty line. Web-Clips: “%[URL]”; Web-Clips must be created in seperate Payload with the same URL (Type “Web Clip”)! Folders: “Folder Name: app1, app2, %[URL]”."},
 		}},
 	{Type: "com.apple.notificationsettings", Name: "Notifications", Category: "Home Screen", Unique: true, Supervised: true,
 		Description: "Per-app notification settings (supervised).",
@@ -543,3 +543,4 @@ func init() {
 		Schemas[i].UserEnrollment = !userEnrollmentForbidden[Schemas[i].Type]
 	}
 }
+

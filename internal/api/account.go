@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/yeungalan/orchard-mdm/internal/portal"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/portal"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 type accountConfigView struct {
@@ -183,3 +183,4 @@ func (a *API) adeServiceDiscovery(w http.ResponseWriter, r *http.Request, p *Pri
 	a.audit(r, p, "ade.service_discovery", fmt.Sprint(id), map[string]string{"url": u})
 	return ok(w, map[string]string{"service_discovery_url": u})
 }
+

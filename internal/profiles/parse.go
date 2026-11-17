@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/yeungalan/orchard-mdm/internal/pki"
+	"github.com/reusingj/orchard2/internal/pki"
 	"howett.net/plist"
 )
 
@@ -88,3 +88,4 @@ func Rewrap(xml []byte, identifier, name, description string) ([]byte, error) {
 	}
 	return plist.MarshalIndent(top, plist.XMLFormat, "\t")
 }
+

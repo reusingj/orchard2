@@ -51,11 +51,14 @@ type ITunes struct {
 }
 
 // NewITunes creates a client.
-func NewITunes(base string) *ITunes {
+func NewITunes(base string, country string) *ITunes {
 	if base == "" {
 		base = "https://itunes.apple.com"
 	}
-	return &ITunes{BaseURL: strings.TrimRight(base, "/"), Country: "us", HTTP: &http.Client{Timeout: 15 * time.Second}}
+	if country == "" {
+		coutry = "us"
+	}
+	return &ITunes{BaseURL: strings.TrimRight(base, "/"), Country: country, HTTP: &http.Client{Timeout: 15 * time.Second}}
 }
 
 func (it *ITunes) get(ctx context.Context, endpoint string, q url.Values) ([]StoreApp, error) {

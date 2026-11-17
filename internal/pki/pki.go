@@ -376,3 +376,4 @@ func NewTestPushCert(topic string) (certPEM, keyPEM string, err error) {
 	kp, _ := KeyPEM(key)
 	return CertPEM(c), kp, nil
 }
+

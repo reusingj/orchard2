@@ -9,8 +9,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/yeungalan/orchard-mdm/internal/config"
-	"github.com/yeungalan/orchard-mdm/internal/server"
+	"github.com/reusingj/orchard2/internal/config"
+	"github.com/reusingj/orchard2/internal/server"
 )
 
 var version = "dev"
@@ -55,3 +55,4 @@ func main() {
 	}
 	log.Info("bye")
 }
+

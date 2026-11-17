@@ -28,6 +28,7 @@ type Config struct {
 	APNsURL        string
 	DEPURL         string
 	VPPURL         string
+	VPPCountryCode string
 	ITunesURL      string
 	AdminUser      string
 	AdminPassword  string
@@ -73,6 +74,7 @@ func Load(args []string) (*Config, error) {
 	fs.StringVar(&c.APNsURL, "apns-url", env("APNS_URL", "https://api.push.apple.com"), "APNs endpoint [ORCHARD_APNS_URL]")
 	fs.StringVar(&c.DEPURL, "dep-url", env("DEP_URL", "https://mdmenrollment.apple.com"), "Apple device enrollment (ADE) API endpoint [ORCHARD_DEP_URL]")
 	fs.StringVar(&c.VPPURL, "vpp-url", env("VPP_URL", "https://vpp.itunes.apple.com/mdm/v2"), "Apps and Books API endpoint [ORCHARD_VPP_URL]")
+	fs.StringVar(&c.VPPCountryCode, "vpp-country-code", env("VPP_COUNTRY_CODE", "us"), "Country-Code for the VPP Apps and books, a list of valid options can be found in the .readme [ORCHARD_VPP_COUNTRY_CODE]")
 	fs.StringVar(&c.ITunesURL, "itunes-url", env("ITUNES_URL", "https://itunes.apple.com"), "iTunes search/lookup endpoint [ORCHARD_ITUNES_URL]")
 	fs.StringVar(&c.AdminUser, "admin-user", env("ADMIN_USER", ""), "create this admin user on first start (with -admin-password) [ORCHARD_ADMIN_USER]")
 	fs.StringVar(&c.AdminPassword, "admin-password", env("ADMIN_PASSWORD", ""), "password for -admin-user [ORCHARD_ADMIN_PASSWORD]")
@@ -87,6 +89,9 @@ func Load(args []string) (*Config, error) {
 	}
 	if (c.TLSCert == "") != (c.TLSKey == "") {
 		return nil, fmt.Errorf("-tls-cert and -tls-key must be given together")
+	}
+	if (c.VPPCountryCode == "") {
+		c.VPPCountryCode = "us"
 	}
 	if c.Listen == "" {
 		if c.TLSEnabled() {
@@ -109,3 +114,4 @@ func Load(args []string) (*Config, error) {
 
 // TLSEnabled reports whether Orchard terminates TLS itself.
 func (c *Config) TLSEnabled() bool { return c.TLSCert != "" || len(c.ACMEDomains) > 0 }
+

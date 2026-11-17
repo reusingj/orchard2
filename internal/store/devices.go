@@ -709,3 +709,4 @@ func (s *Store) DistinctValues(column string) ([]string, error) {
 	}
 	return out, rows.Err()
 }
+

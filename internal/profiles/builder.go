@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yeungalan/orchard-mdm/internal/pki"
+	"github.com/reusingj/orchard2/internal/pki"
 	"howett.net/plist"
 )
 
@@ -525,31 +525,82 @@ func parseX500(s string) (any, bool, error) {
 func parsePages(text string) []any {
 	var pages []any
 	var cur []any
+
 	flush := func() {
 		if len(cur) > 0 {
 			pages = append(pages, cur)
 			cur = nil
 		}
 	}
+
+	// Parses applications and WebClips from a comma-separated list.
+	parseItems := func(input string) []any {
+		var items []any
+
+		for _, item := range strings.Split(input, ",") {
+			item = strings.TrimSpace(item)
+
+			if item == "" {
+				continue
+			}
+
+			// WebClip syntax: %[URL]
+			if strings.HasPrefix(item, "%[") {
+				if strings.HasSuffix(item, "]") && len(item) > 3 {
+					url := strings.TrimSpace(item[2 : len(item)-1])
+
+					if url != "" {
+						items = append(items, map[string]any{
+							"Type": "WebClip",
+							"URL":  url,
+						})
+					}
+				}
+				continue
+			}
+
+			// Regular application
+			items = append(items, map[string]any{
+				"Type":     "Application",
+				"BundleID": item,
+			})
+		}
+
+		return items
+	}
+
 	for _, line := range strings.Split(strings.ReplaceAll(text, "\r", ""), "\n") {
 		line = strings.TrimSpace(line)
+
 		if line == "" {
 			flush()
 			continue
 		}
-		if i := strings.Index(line, ":"); i > 0 {
-			name := strings.TrimSpace(line[:i])
-			var apps []any
-			for _, id := range strings.Split(line[i+1:], ",") {
-				if id = strings.TrimSpace(id); id != "" {
-					apps = append(apps, map[string]any{"Type": "Application", "BundleID": id})
-				}
-			}
-			cur = append(cur, map[string]any{"Type": "Folder", "DisplayName": name, "Pages": []any{apps}})
+
+		// A line starting with %[ is a WebClip, never a folder.
+		if strings.HasPrefix(line, "%[") {
+			cur = append(cur, parseItems(line)...)
 			continue
 		}
-		cur = append(cur, map[string]any{"Type": "Application", "BundleID": line})
+
+		// Folder syntax: FolderName: app1, app2, %[URL]
+		if i := strings.Index(line, ":"); i > 0 {
+			name := strings.TrimSpace(line[:i])
+
+			if name != "" {
+				cur = append(cur, map[string]any{
+					"Type":        "Folder",
+					"DisplayName": name,
+					"Pages":       []any{parseItems(line[i+1:])},
+				})
+				continue
+			}
+		}
+
+		// Regular applications and WebClips outside folders.
+		cur = append(cur, parseItems(line)...)
 	}
+
 	flush()
 	return pages
 }
@@ -573,3 +624,4 @@ func HomeScreenDock(ids []string) []any {
 	}
 	return out
 }
+

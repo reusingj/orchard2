@@ -1,4 +1,4 @@
-# Orchard MDM
+# Orchard2
 
 A self-hosted mobile device management server for iPhone and iPad, written in Go. It covers what
 teams usually reach for Microsoft Intune or Jamf to do: enroll devices, push Wi-Fi/VPN/email and
@@ -6,7 +6,7 @@ restriction profiles, install apps, enforce compliance, run remote actions, and 
 with battery, network and location history. All of it ships as one binary with a built-in web
 console and REST API.
 
-**Orchard MDM deliberately cannot wipe devices.** See [No remote wipe](#no-remote-wipe).
+**Orchard2 deliberately cannot wipe devices.** See [No remote wipe](#no-remote-wipe).
 
 ![Overview: the orchard grid shows every device, shaped and colored by compliance](docs/images/dashboard.png)
 

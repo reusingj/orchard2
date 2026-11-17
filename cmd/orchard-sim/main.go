@@ -17,7 +17,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/devicesim"
+	"github.com/reusingj/orchard2/internal/devicesim"
 )
 
 func main() {
@@ -104,3 +104,4 @@ func main() {
 	}
 	wg.Wait()
 }
+

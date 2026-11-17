@@ -112,3 +112,4 @@ func safeCall(h Handler, e Event) {
 	}()
 	h(e)
 }
+

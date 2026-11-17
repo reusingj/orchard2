@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/store"
 	"howett.net/plist"
 )
 
@@ -875,3 +875,4 @@ func (s *Service) InstallApplicationCommand(app *store.App, d *store.Device) (ma
 	}
 	return c, nil
 }
+

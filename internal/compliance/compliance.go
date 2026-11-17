@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/reconcile"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/reconcile"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 // Rules are the checks of a policy. Zero values disable a check.
@@ -331,3 +331,4 @@ func complianceMessage(from, to string) string {
 	}
 	return fmt.Sprintf("Now %s (was %s)", label(to), label(from))
 }
+

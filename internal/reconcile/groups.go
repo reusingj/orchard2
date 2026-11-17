@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 // RuleFields lists the attributes available to dynamic group rules.
@@ -223,3 +223,4 @@ func needsApps(rules *store.GroupRules) bool {
 	}
 	return false
 }
+

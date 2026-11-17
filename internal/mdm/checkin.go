@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yeungalan/orchard-mdm/internal/ddm"
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/ddm"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
 	"howett.net/plist"
 )
 
@@ -387,3 +387,4 @@ func (s *Service) QueueTelemetry(udid string) bool {
 	_, err := s.Enqueue(udid, map[string]any{"RequestType": "DeviceInformation", "Queries": queries}, Meta{Source: "system", Ref: "telemetry"})
 	return err == nil
 }
+

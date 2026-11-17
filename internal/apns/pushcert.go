@@ -20,8 +20,8 @@ import (
 	"time"
 
 	"github.com/smallstep/pkcs7"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
 	"howett.net/plist"
 	pkcs12 "software.sslmate.com/src/go-pkcs12"
 )
@@ -377,3 +377,4 @@ func (m *Manager) InstallCertificate(data []byte, password, appleID string, allo
 	m.mu.Unlock()
 	return res, nil
 }
+

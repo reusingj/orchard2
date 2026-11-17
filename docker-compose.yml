@@ -1,7 +1,7 @@
 services:
   orchard:
     build: .
-    image: orchard-mdm:latest
+    image: orchard2:latest
     restart: unless-stopped
     ports:
       - "443:8443"   # HTTPS (Let's Encrypt)
@@ -17,6 +17,10 @@ services:
       # Behind your own reverse proxy instead? Remove the ACME settings and use:
       # ORCHARD_LISTEN: ":8080"
       # ORCHARD_TRUST_PROXY: "true"
+
+      # Optional: Set the country code for VPP (defaults to "us" if not set). This is used for the VPP API.
+      # Its recommended to change this if your organization is not based in the US, as it otherwise may cause issues with the display of VPP content.
+      # ORCHARD_VPP_COUNTRY_CODE: "us"
 
 volumes:
   orchard-data:

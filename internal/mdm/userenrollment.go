@@ -33,3 +33,4 @@ var UserEnrollmentQueries = []string{
 
 // UserEnrollmentTelemetryQueries is the lightweight sample for personal devices.
 var UserEnrollmentTelemetryQueries = []string{"BatteryLevel", "AvailableDeviceCapacity", "DeviceCapacity", "OSVersion", "BuildVersion", "DeviceName"}
+

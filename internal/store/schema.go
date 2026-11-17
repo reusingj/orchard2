@@ -555,3 +555,4 @@ CREATE TABLE account_enrollments (
 CREATE INDEX account_enrollments_created ON account_enrollments(created_at)
 `,
 }
+

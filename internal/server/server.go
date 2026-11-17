@@ -17,21 +17,21 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/api"
-	"github.com/yeungalan/orchard-mdm/internal/apns"
-	"github.com/yeungalan/orchard-mdm/internal/apps"
-	"github.com/yeungalan/orchard-mdm/internal/compliance"
-	"github.com/yeungalan/orchard-mdm/internal/config"
-	"github.com/yeungalan/orchard-mdm/internal/ddm"
-	"github.com/yeungalan/orchard-mdm/internal/dep"
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/portal"
-	"github.com/yeungalan/orchard-mdm/internal/reconcile"
-	"github.com/yeungalan/orchard-mdm/internal/scepsrv"
-	"github.com/yeungalan/orchard-mdm/internal/store"
-	"github.com/yeungalan/orchard-mdm/internal/webhook"
-	"github.com/yeungalan/orchard-mdm/web"
+	"github.com/reusingj/orchard2/internal/api"
+	"github.com/reusingj/orchard2/internal/apns"
+	"github.com/reusingj/orchard2/internal/apps"
+	"github.com/reusingj/orchard2/internal/compliance"
+	"github.com/reusingj/orchard2/internal/config"
+	"github.com/reusingj/orchard2/internal/ddm"
+	"github.com/reusingj/orchard2/internal/dep"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/portal"
+	"github.com/reusingj/orchard2/internal/reconcile"
+	"github.com/reusingj/orchard2/internal/scepsrv"
+	"github.com/reusingj/orchard2/internal/store"
+	"github.com/reusingj/orchard2/internal/webhook"
+	"github.com/reusingj/orchard2/web"
 	"golang.org/x/crypto/acme/autocert"
 )
 
@@ -87,7 +87,7 @@ func New(cfg *config.Config, log *slog.Logger) (*App, error) {
 	a.Reconciler = reconcile.New(st, a.MDM, log, cfg.VPPURL)
 	a.Compliance = compliance.New(st, a.MDM, log)
 	a.Webhooks = webhook.New(st, log)
-	a.ITunes = apps.NewITunes(cfg.ITunesURL)
+	a.ITunes = apps.NewITunes(cfg.ITunesURL, cfg.VPPCountryCode)
 	a.Reconciler.Subscribe(a.Bus)
 	a.Compliance.Subscribe(a.Bus)
 	a.Webhooks.Subscribe(a.Bus)
@@ -338,3 +338,4 @@ func (a *App) Run(ctx context.Context) error {
 	a.MDM.FlushPushes()
 	return nil
 }
+

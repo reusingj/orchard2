@@ -120,7 +120,7 @@ function shell() {
   document.getElementById("app").innerHTML = html`
   <div class="shell">
     <aside class="side">
-      <a class="brand" href="#/"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/static/icon.svg#mark"/></svg><span><b>Orchard</b><small>${session.org}</small></span></a>
+      <a class="brand" href="#/"><img aria-hidden="true" style="max-width: 50px; max-height: 60px;" src="/static/icon.svg"><span><b>${session.org_abbreviation} MDM</b><small>${session.org}</small></span></a>
       <nav class="nav" aria-label="Main">
         ${NAV.map((g) => html`<h2>${g.title}</h2>${g.items.map(([href, label, d]) => html`<a href="#${href}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="${d}"/></svg>${label}</a>`)}`)}
       </nav>
@@ -157,7 +157,7 @@ function shell() {
 
 function authPage(title, sub, body) {
   document.getElementById("app").innerHTML = html`<div class="login"><div class="login-card">
-    <div class="brand"><svg viewBox="0 0 32 32" aria-hidden="true" width="40" height="40"><use href="/static/icon.svg#mark"/></svg><span><b style="font-size:22px">Orchard MDM</b>${session.org && session.org !== "Orchard MDM" ? html`<small>${session.org}</small>` : ""}</span></div>
+    <div class="brand"><img aria-hidden="true" style="max-width: 50px; max-height: 60px;" src="/static/icon.svg"><span><b style="font-size:22px">${session.org_abbreviation && session.org_abbreviation !== "Acme" ? html`<small>${session.org_abbreviation}</small>` : ""} MDM</b>${session.org && session.org !== "Default Organization" ? html`<small>${session.org}</small>` : ""}</span></div>
     <div class="panel panel-pad"><h1 style="font-size:21px;margin:0 0 6px">${title}</h1><p class="hint" style="margin:0 0 16px">${sub}</p>${body}</div>
   </div></div>`.s;
 }
@@ -183,6 +183,7 @@ function setupPage() {
   authPage("Create the administrator account", "This is a new Orchard MDM server. Enter the setup code printed in the server log, then choose the first administrator's sign-in details.", html`<form id="setup-form">
     <label class="field"><span>Setup code</span><input type="text" name="setup_code" class="code" required autocomplete="off" autofocus></label>
     <label class="field"><span>Organization name</span><input type="text" name="org_name" placeholder="Acme Inc."></label>
+    <label class="field"><span>Organization name abbreviation</span><input type="text" name="org_name_abbreviation" placeholder="AcIn."></label>
     <label class="field"><span>Username</span><input type="text" name="username" required autocomplete="username"></label>
     <label class="field"><span>Password</span><input type="password" name="password" required minlength="10" autocomplete="new-password"><small class="hint">At least 10 characters.</small></label>
     <button class="btn btn-primary" style="width:100%" type="submit">Create account</button></form>`);
@@ -190,7 +191,7 @@ function setupPage() {
     e.preventDefault();
     const f = e.target;
     try {
-      const res = await api.post("/api/auth/setup", { setup_code: f.setup_code.value, org_name: f.org_name.value, username: f.username.value, password: f.password.value });
+      const res = await api.post("/api/auth/setup", { setup_code: f.setup_code.value, org_name: f.org_name.value, org_name_abbreviation: f.org_name_abbreviation.value, username: f.username.value, password: f.password.value });
       session.csrf = res.csrf;
       if (f.org_name.value) session.org = f.org_name.value;
       await loadMe();
@@ -213,7 +214,8 @@ async function boot() {
   try {
     const st = await api.get("/api/auth/status");
     session.org = st.org_name;
-    document.title = `Orchard MDM – ${st.org_name}`;
+    session.org_abbreviation = st.org_name_abbreviation;
+    document.title = `${st.org_name_abbreviation} MDM – ${st.org_name}`;
     if (st.setup_required) return setupPage();
     try { await loadMe(); } catch (e) { if (e.status === 401) return loginPage(); throw e; }
     shell();

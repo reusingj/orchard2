@@ -14,8 +14,8 @@ import (
 
 	"github.com/smallstep/pkcs7"
 	"github.com/smallstep/scep"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 // Handler serves /scep.
@@ -136,3 +136,4 @@ func (h *Handler) pkiOperation(w http.ResponseWriter, data []byte) {
 	w.Header().Set("Content-Type", "application/x-pki-message")
 	_, _ = w.Write(rep.Raw)
 }
+

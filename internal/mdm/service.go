@@ -15,11 +15,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/apns"
-	"github.com/yeungalan/orchard-mdm/internal/ddm"
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/apns"
+	"github.com/reusingj/orchard2/internal/ddm"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
 	"howett.net/plist"
 )
 
@@ -101,7 +101,7 @@ func (s *Service) loadCA() error {
 	if !errors.Is(err, store.ErrNotFound) {
 		return err
 	}
-	org := s.store.GetSetting(SettingOrgName, "Orchard MDM")
+	org := s.store.GetSetting(SettingOrgName, "Orchard2")
 	cert, key, err := pki.NewCA(org+" Device CA", org, 10)
 	if err != nil {
 		return err
@@ -325,3 +325,4 @@ func ClientIP(r *http.Request, trustProxy bool) string {
 	}
 	return host
 }
+

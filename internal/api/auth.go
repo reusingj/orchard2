@@ -11,8 +11,8 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/store"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -193,6 +193,7 @@ func (a *API) setup(w http.ResponseWriter, r *http.Request) error {
 		Username  string `json:"username"`
 		Password  string `json:"password"`
 		OrgName   string `json:"org_name"`
+		OrgNameAbbreviation   string `json:"org_name_abbreviation"`
 	}
 	if err := decode(r, &req); err != nil {
 		return err
@@ -210,6 +211,9 @@ func (a *API) setup(w http.ResponseWriter, r *http.Request) error {
 	}
 	if strings.TrimSpace(req.OrgName) != "" {
 		_ = a.Store.SetSetting(mdm.SettingOrgName, strings.TrimSpace(req.OrgName))
+	}
+	if strings.TrimSpace(req.OrgNameAbbreviation) != "" {
+		_ = a.Store.SetSetting(mdm.SettingOrgNameAbbreviation, strings.TrimSpace(req.OrgNameAbbreviation))
 	}
 	u, err := a.Store.GetUserByName(req.Username)
 	if err != nil {
@@ -438,3 +442,4 @@ func (a *API) deleteAPIKey(w http.ResponseWriter, r *http.Request, p *Principal)
 	a.audit(r, p, "apikey.deleted", r.PathValue("id"), nil)
 	return ok(w, map[string]bool{"ok": true})
 }
+

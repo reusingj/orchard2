@@ -388,3 +388,4 @@ func (s *Store) ListAudit(q string, limit, offset int) ([]*AuditEntry, int, erro
 	}
 	return out, total, rows.Err()
 }
+

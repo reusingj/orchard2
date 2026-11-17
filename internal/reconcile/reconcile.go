@@ -10,12 +10,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/ddm"
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/profiles"
-	"github.com/yeungalan/orchard-mdm/internal/store"
-	"github.com/yeungalan/orchard-mdm/internal/vpp"
+	"github.com/reusingj/orchard2/internal/ddm"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/profiles"
+	"github.com/reusingj/orchard2/internal/store"
+	"github.com/reusingj/orchard2/internal/vpp"
 )
 
 // MaxAppAttempts bounds automatic re-installs of a failing required app.
@@ -530,3 +530,4 @@ func (r *Reconciler) ensureLicense(app *store.App, d *store.Device) error {
 	}
 	return fmt.Errorf("no Apps and Books licenses for App Store ID %s", adam)
 }
+

@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/smallstep/pkcs7"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 var errNoIdentity = errors.New("request carries no device identity (Mdm-Signature header or client certificate)")
@@ -88,3 +88,4 @@ func (s *Service) authorizeDevice(d *store.Device, cert *x509.Certificate) error
 	}
 	return errors.New("certificate does not match the enrolled device identity")
 }
+

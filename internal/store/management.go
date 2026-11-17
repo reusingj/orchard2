@@ -871,3 +871,4 @@ func (s *Store) FindAppStateByCommand(cmdUUID string) (*AppState, error) {
 }
 
 var _ = sql.ErrNoRows
+

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
 	"howett.net/plist"
 )
 
@@ -74,6 +74,7 @@ func (s *Service) EnrollmentProfile(o EnrollmentOptions) ([]byte, error) {
 		return nil, errors.New("account-driven enrollment needs a Managed Apple Account")
 	}
 	org := s.Setting(SettingOrgName)
+	orgAbbreviation := s.Setting(SettingOrgNameAbbreviation)
 	ident := s.MDMIdentifier()
 	scepUUID := pki.NewUUID()
 
@@ -127,8 +128,8 @@ func (s *Service) EnrollmentProfile(o EnrollmentOptions) ([]byte, error) {
 			"PayloadDescription": "Certificate this device uses to authenticate with the management server.",
 			"PayloadContent": map[string]any{
 				"URL":       base + "/scep",
-				"Name":      "OrchardMDM",
-				"Subject":   [][][]string{{{"O", org}}, {{"CN", "Orchard MDM Identity " + strings.ToUpper(randomToken(4))}}},
+				"Name":      orgAbbreviation + " MDM",
+				"Subject":   [][][]string{{{"O", org}}, {{"CN", orgAbbreviation + " MDM Identity " + strings.ToUpper(randomToken(4))}}},
 				"Challenge": challenge,
 				"Keysize":   2048,
 				"Key Type":  "RSA",
@@ -221,3 +222,4 @@ func (s *Service) Unenroll(udid string, meta Meta) (*store.Command, error) {
 	meta.Ref = "unenroll"
 	return s.EnqueueAndPush(udid, map[string]any{"RequestType": "RemoveProfile", "Identifier": s.MDMIdentifier()}, meta)
 }
+

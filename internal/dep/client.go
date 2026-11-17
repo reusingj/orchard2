@@ -370,3 +370,4 @@ func (c *Client) DeviceDetails(ctx context.Context, serials []string) (map[strin
 func (c *Client) AssignServiceDiscovery(ctx context.Context, discoveryURL string) error {
 	return c.do(ctx, http.MethodPost, "/account-driven-enrollment/profile", map[string]string{"mdm_service_discovery_url": discoveryURL}, nil)
 }
+

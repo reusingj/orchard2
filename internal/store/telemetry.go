@@ -134,3 +134,4 @@ func (s *Store) PruneTelemetry(maxAge int64) {
 	_, _ = s.db.Exec(`DELETE FROM device_telemetry WHERE ts<?`, cut)
 	_, _ = s.db.Exec(`DELETE FROM device_locations WHERE ts<?`, cut)
 }
+

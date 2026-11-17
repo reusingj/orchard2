@@ -249,3 +249,4 @@ func (c *Client) AssociateUsers(ctx context.Context, adamID, pricing string, cli
 	}, &out)
 	return &out, err
 }
+

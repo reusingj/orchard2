@@ -6,8 +6,8 @@ import (
 	"encoding/hex"
 	"time"
 
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 // handleResult applies an acknowledged command response to the inventory.
@@ -399,3 +399,4 @@ func (s *Service) SaveLocation(loc *store.Location) {
 	})
 	s.bus.Publish(events.DeviceLocation, loc.DeviceID, map[string]any{"latitude": loc.Latitude, "longitude": loc.Longitude, "accuracy": loc.Accuracy, "source": loc.Source})
 }
+

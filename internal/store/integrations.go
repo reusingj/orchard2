@@ -731,3 +731,4 @@ func (s *Store) DeleteWebhook(id int64) error {
 	_, err := s.db.Exec(`DELETE FROM webhooks WHERE id=?`, id)
 	return err
 }
+

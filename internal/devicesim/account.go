@@ -219,3 +219,4 @@ func LinkAuth(match string) Authenticator {
 		return TokenFromCallback(resp)
 	}
 }
+

@@ -22,9 +22,9 @@ import (
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/smallstep/pkcs7"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/store"
 	"golang.org/x/oauth2"
 	"howett.net/plist"
 )
@@ -468,3 +468,4 @@ func (f *accountFlow) ssoCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	f.complete(w, r, &store.AccountEnrollment{Mode: st.mode, UserIdentifier: userID, ManagedAppleID: userID, DisplayName: name, AuthMethod: "sso", GroupIDs: cfg.GroupIDs})
 }
+

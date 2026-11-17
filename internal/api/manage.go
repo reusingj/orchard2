@@ -11,15 +11,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yeungalan/orchard-mdm/internal/apps"
-	"github.com/yeungalan/orchard-mdm/internal/compliance"
-	"github.com/yeungalan/orchard-mdm/internal/ddm"
-	"github.com/yeungalan/orchard-mdm/internal/events"
-	"github.com/yeungalan/orchard-mdm/internal/mdm"
-	"github.com/yeungalan/orchard-mdm/internal/pki"
-	"github.com/yeungalan/orchard-mdm/internal/profiles"
-	"github.com/yeungalan/orchard-mdm/internal/reconcile"
-	"github.com/yeungalan/orchard-mdm/internal/store"
+	"github.com/reusingj/orchard2/internal/apps"
+	"github.com/reusingj/orchard2/internal/compliance"
+	"github.com/reusingj/orchard2/internal/ddm"
+	"github.com/reusingj/orchard2/internal/events"
+	"github.com/reusingj/orchard2/internal/mdm"
+	"github.com/reusingj/orchard2/internal/pki"
+	"github.com/reusingj/orchard2/internal/profiles"
+	"github.com/reusingj/orchard2/internal/reconcile"
+	"github.com/reusingj/orchard2/internal/store"
 )
 
 // ---- groups ----
@@ -1267,3 +1267,4 @@ func (a *API) complianceEvaluate(w http.ResponseWriter, r *http.Request, p *Prin
 	a.audit(r, p, "compliance.evaluate", "all", nil)
 	return a.complianceSummary(w, r, p)
 }
+

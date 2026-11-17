@@ -99,3 +99,4 @@ func TestVPNOnDemand(t *testing.T) {
 		t.Fatal("hidden IPSec section emitted")
 	}
 }
+
