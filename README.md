@@ -6,6 +6,15 @@ restriction profiles, install apps, enforce compliance, run remote actions, and 
 with battery, network and location history. All of it ships as one binary with a built-in web
 console and REST API.
 
+### This is a fork of https://github.com/yeungalan/orchard-mdm
+
+## These are all the changes I made in this repository after the fork:
+
+- Added a short handle of the organization name that is shown in the sidebar and the page title (Org MDM instead of Orchard MDM)
+- Added the optional country setting for VPP (Apps and Books), because some apps are not available in certain countries (only one countrycode per Orchard instance...)
+- Removed Timestamp-Error (Orchard sent a command with missing parameters and got back error messages from enrolled devices, this is fixed now)
+- Changed image container for sidebar and login-page-logo in order to show normal custom svgs
+
 **Orchard2 deliberately cannot wipe devices.** See [No remote wipe](#no-remote-wipe).
 
 ![Overview: the orchard grid shows every device, shaped and colored by compliance](docs/images/dashboard.png)
