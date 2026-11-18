@@ -347,6 +347,7 @@ Every flag can also be set as an environment variable (`ORCHARD_` + upper-case n
 | `-admin-user`, `-admin-password` | `ORCHARD_ADMIN_USER`, `ORCHARD_ADMIN_PASSWORD` | | Create the first administrator non-interactively |
 | `-log-level`, `-log-json` | `ORCHARD_LOG_LEVEL`, `ORCHARD_LOG_JSON` | `info` | Logging |
 | `-apns-url`, `-dep-url`, `-vpp-url`, `-itunes-url` | | Apple production endpoints | Override Apple endpoints (testing) |
+| `-vpp-country-code` | `ORCHARD_VPP_COUNTRY_CODE` | `us` | Apple VPP country (some apps are only available in certain countries) |
 
 Everything else (organization name, support contacts, enrollment policy, inventory and telemetry intervals, retention,
 Lost Mode location polling, profile signing) lives under **Settings** in the console.
