@@ -14,6 +14,8 @@ console and REST API.
 - Added the optional country setting for VPP (Apps and Books), because some apps are not available in certain countries (only one countrycode per Orchard instance...)
 - Removed Timestamp-Error (Orchard sent a command with missing parameters and got back error messages from enrolled devices, this is fixed now)
 - Changed image container for sidebar and login-page-logo in order to show normal custom svgs
+- Changed color palette on all themes from green to red and blue
+- Added functionality to save custom commands for quick resending to devices
 
 
 

@@ -53,6 +53,7 @@ curl -H 'Authorization: Bearer orch_xxxxxxxx_…' https://mdm.example.com/api/de
 | `GET` | `/api/devices/{udid}/assignments` | read |
 | `GET` | `/api/devices/{udid}/compliance` | read |
 | `POST` | `/api/devices/{udid}/commands` | helpdesk |
+| `POST` | `/api/devices/{udid}/saved-commands/{id}` | helpdesk |
 | `POST` | `/api/devices/{udid}/actions/{action}` | helpdesk |
 | `GET` | `/api/devices/{udid}/secrets` | operator |
 
@@ -61,6 +62,10 @@ curl -H 'Authorization: Bearer orch_xxxxxxxx_…' https://mdm.example.com/api/de
 | Method | Path | Minimum role |
 |---|---|---|
 | `GET` | `/api/command-catalog` | read |
+| `GET` | `/api/saved-commands` | read |
+| `POST` | `/api/saved-commands` | operator |
+| `PUT` | `/api/saved-commands/{id}` | operator |
+| `DELETE` | `/api/saved-commands/{id}` | operator |
 | `GET` | `/api/commands` | read |
 | `GET` | `/api/commands/{uuid}` | read |
 | `DELETE` | `/api/commands/{uuid}` | helpdesk |
@@ -222,6 +227,7 @@ curl -H 'Authorization: Bearer orch_xxxxxxxx_…' https://mdm.example.com/api/de
 
 - `GET /api/devices` accepts `q`, `status` (`enrolled`, `pending`, `unenrolled`), `compliance`, `model`, `os`, `ownership`, `supervised` (`1`/`0`), `group`, `sort` (`name`, `os`, `battery`, `last_seen`, …), `dir=desc`, `limit`, `offset`.
 - `POST /api/devices/{udid}/commands` takes `{"command": "<catalog id>", "params": {…}}`. The catalog (`GET /api/command-catalog`) lists every command with its parameters. Wipe commands (`EraseDevice`, `DeleteUser`) are refused.
+- Saved commands use `{"name":"…","kind":"catalog","command":"<catalog id>","params":{…}}` for catalog templates, or `{"name":"…","kind":"custom","command":"<JSON or plist command dictionary>"}` for custom MDM commands. Create, update and delete require the operator role; execution requires helpdesk. Read-only and helpdesk listings omit command parameter/payload contents.
 - `POST /api/devices/{udid}/actions/{action}` actions: `sync`, `telemetry`, `push`, `reconcile`, `retry-failed`, `clear-queue`, `locate`, `evaluate-compliance`, `renew-identity`, `unenroll`.
 - `POST /api/devices/bulk` takes `udids` plus either `command`/`params`, an `action`, `add_to_group`/`remove_from_group` with `group_id`, or `add_tags` with `tags`.
 - `GET /api/devices/{udid}/telemetry?hours=168` returns battery/storage/network samples and the networks seen; `GET /api/devices/{udid}/locations?days=30` returns location fixes.

@@ -11,6 +11,7 @@ const NAV = [
   { title: "Configure", items: [
     ["/profiles", "Configuration profiles", "M5 2.5h7l3 3v12H5zM12 2.5v3h3M8 10h5M8 13h5"],
     ["/apps", "Apps", "M3 3h6v6H3zM11 3h6v6h-6zM3 11h6v6H3zM11 11h6v6h-6z"],
+    ["/saved-commands", "Commands", "M4 5h12M4 10h12M4 15h7"],
     ["/declarations", "Declarations", "M4 4h12v12H4zM7 8h6M7 12h4"],
     ["/compliance", "Compliance", "M10 2.5 16 5v5c0 4-2.7 6.5-6 7.5C6.7 16.5 4 14 4 10V5zM7.5 10l2 2 3.5-4"],
   ] },
@@ -28,6 +29,7 @@ const ROUTES = [
   ["/", "dashboard"], ["/devices", "devices"], ["/devices/:udid", "device"], ["/devices/:udid/:tab", "device"],
   ["/groups", "groups"], ["/groups/:id", "group"], ["/commands", "commands"],
   ["/profiles", "profiles"], ["/profiles/new", "profile"], ["/profiles/:id", "profile"],
+  ["/saved-commands", "savedCommands"],
   ["/apps", "apps"], ["/apps/:id", "app"], ["/declarations", "declarations"], ["/declarations/:id", "declaration"],
   ["/compliance", "compliance"], ["/compliance/:id", "policy"],
   ["/enrollment", "enrollment"], ["/ade", "ade"], ["/activity", "activity"], ["/settings", "settings"], ["/settings/:tab", "settings"],
@@ -36,7 +38,7 @@ const ROUTES = [
 const MODULES = {
   dashboard: "dashboard", devices: "devices", device: "device", groups: "groups", group: "groups", commands: "commands",
   profiles: "profiles", profile: "profiles", apps: "apps", app: "apps", declarations: "declarations", declaration: "declarations",
-  compliance: "compliance", policy: "compliance", enrollment: "enrollment", ade: "ade", activity: "activity", settings: "settings",
+  savedCommands: "saved-commands", compliance: "compliance", policy: "compliance", enrollment: "enrollment", ade: "ade", activity: "activity", settings: "settings",
 };
 
 function match(path) {

@@ -554,5 +554,17 @@ CREATE TABLE account_enrollments (
 );
 CREATE INDEX account_enrollments_created ON account_enrollments(created_at)
 `,
+	// 3: reusable command templates
+	`
+CREATE TABLE saved_commands (
+	id         INTEGER PRIMARY KEY AUTOINCREMENT,
+	name       TEXT NOT NULL UNIQUE COLLATE NOCASE,
+	kind       TEXT NOT NULL,
+	command    TEXT NOT NULL,
+	params     TEXT NOT NULL DEFAULT '{}',
+	created_at INTEGER NOT NULL,
+	updated_at INTEGER NOT NULL
+)
+`,
 }
 

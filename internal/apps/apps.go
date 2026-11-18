@@ -56,7 +56,7 @@ func NewITunes(base string, country string) *ITunes {
 		base = "https://itunes.apple.com"
 	}
 	if country == "" {
-		coutry = "us"
+		country = "us"
 	}
 	return &ITunes{BaseURL: strings.TrimRight(base, "/"), Country: country, HTTP: &http.Client{Timeout: 15 * time.Second}}
 }

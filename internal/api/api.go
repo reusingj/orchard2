@@ -262,9 +262,14 @@ func (a *API) Register(mux *http.ServeMux) {
 
 	// commands
 	a.handle(mux, "GET /api/command-catalog", PermRead, a.commandCatalog)
+	a.handle(mux, "GET /api/saved-commands", PermRead, a.listSavedCommands)
+	a.handle(mux, "POST /api/saved-commands", PermManage, a.createSavedCommand)
+	a.handle(mux, "PUT /api/saved-commands/{id}", PermManage, a.updateSavedCommand)
+	a.handle(mux, "DELETE /api/saved-commands/{id}", PermManage, a.deleteSavedCommand)
 	a.handle(mux, "GET /api/commands", PermRead, a.listCommands)
 	a.handle(mux, "GET /api/commands/{uuid}", PermRead, a.getCommand)
 	a.handle(mux, "DELETE /api/commands/{uuid}", PermAct, a.cancelCommand)
+	a.handle(mux, "POST /api/devices/{udid}/saved-commands/{id}", PermAct, a.runSavedCommand)
 
 	// groups
 	a.handle(mux, "GET /api/groups", PermRead, a.listGroups)
