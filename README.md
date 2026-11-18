@@ -6,7 +6,8 @@ restriction profiles, install apps, enforce compliance, run remote actions, and 
 with battery, network and location history. All of it ships as one binary with a built-in web
 console and REST API.
 
-## Changes since forking Orchard MDM (https://github.com/yeungalan/orchard-mdm)
+## Changes since forking Orchard MDM
+https://github.com/yeungalan/orchard-mdm
 
 - Added a configurable organization name abrreviation for the sidebar and page title.
 - Added an optional VPP country setting to find country-specific apps (one country per instance).
