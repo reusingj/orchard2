@@ -15,6 +15,8 @@ console and REST API.
 - Removed Timestamp-Error (Orchard sent a command with missing parameters and got back error messages from enrolled devices, this is fixed now)
 - Changed image container for sidebar and login-page-logo in order to show normal custom svgs
 
+
+
 **Orchard2 deliberately cannot wipe devices.** See [No remote wipe](#no-remote-wipe).
 
 ![Overview: the orchard grid shows every device, shaped and colored by compliance](docs/images/dashboard.png)
