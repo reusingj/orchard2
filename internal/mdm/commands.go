@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/reusingj/orchard2/internal/store"
 	"howett.net/plist"
@@ -639,7 +640,12 @@ var Catalog = []*Spec{
 
 // SyncTokens returns the DeclarativeManagement Data blob.
 func SyncTokens(token string) []byte {
-	b, _ := json.Marshal(map[string]any{"SyncTokens": map[string]any{"DeclarationsToken": token}})
+	b, _ := json.Marshal(map[string]any{
+		"SyncTokens": map[string]any{
+			"DeclarationsToken": token,
+			"Timestamp":         time.Now().UTC().Format(time.RFC3339),
+		},
+	})
 	return b
 }
 
