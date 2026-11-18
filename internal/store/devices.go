@@ -529,6 +529,24 @@ func (s *Store) DeviceAppBundleIDs(udid string) (map[string]DeviceApp, error) {
 	return out, nil
 }
 
+// ManagedAppDeviceIDs returns devices reporting the app as managed.
+func (s *Store) ManagedAppDeviceIDs(bundleID string) ([]string, error) {
+	rows, err := s.db.Query(`SELECT DISTINCT device_id FROM device_apps WHERE bundle_id=? AND is_managed=1 ORDER BY device_id`, bundleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []string
+	for rows.Next() {
+		var udid string
+		if err := rows.Scan(&udid); err != nil {
+			return nil, err
+		}
+		out = append(out, udid)
+	}
+	return out, rows.Err()
+}
+
 // AppInstallCounts returns, for each bundle ID, how many enrolled devices report it installed.
 func (s *Store) AppInstallCounts() (map[string]int, error) {
 	rows, err := s.db.Query(`SELECT a.bundle_id, COUNT(*) FROM device_apps a JOIN devices d ON d.udid=a.device_id WHERE d.enrollment_status='enrolled' GROUP BY a.bundle_id`)
@@ -709,4 +727,3 @@ func (s *Store) DistinctValues(column string) ([]string, error) {
 	}
 	return out, rows.Err()
 }
-

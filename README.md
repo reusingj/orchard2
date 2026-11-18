@@ -8,14 +8,15 @@ console and REST API.
 
 ### This is a fork of https://github.com/yeungalan/orchard-mdm
 
-## These are all the changes I made in this repository after the fork:
+## Changes since forking Orchard MDM
 
-- Added a short handle of the organization name that is shown in the sidebar and the page title (Org MDM instead of Orchard MDM)
-- Added the optional country setting for VPP (Apps and Books), because some apps are not available in certain countries (only one countrycode per Orchard instance...)
-- Removed Timestamp-Error (Orchard sent a command with missing parameters and got back error messages from enrolled devices, this is fixed now)
-- Changed image container for sidebar and login-page-logo in order to show normal custom svgs
-- Changed color palette on all themes from green to red and blue
-- Added functionality to save custom commands for quick resending to devices
+- Added a configurable organization name abrreviation for the sidebar and page title.
+- Added an optional VPP country setting to find country-specific apps (one country per instance).
+- Fixed timestamp errors caused by commands missing required parameters.
+- Improved support for custom SVG logos in the sidebar and login page.
+- Updated the theme palettes from green to red and blue.
+- Added saved custom commands for quick reuse on devices.
+- Added VPP asset and license management, including license disassociation.
 
 
 

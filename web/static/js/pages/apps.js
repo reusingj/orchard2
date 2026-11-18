@@ -5,7 +5,7 @@ const KIND = { appstore: "App Store", vpp: "App Store (licensed)", enterprise: "
 
 export async function render(ctx) {
   if (ctx.name === "app") return detail(ctx);
-  const { root, navigate } = ctx;
+  const { root, navigate, refresh } = ctx;
   const [res, vpp] = await Promise.all([api.get("/api/apps"), api.get("/api/vpp/assets").catch(() => ({ items: [] }))]);
   root.innerHTML = html`<div class="page-head"><div><h1>Apps</h1><p class="sub">Your app catalog. Assign apps as required (installed automatically), available (offered in the Company Portal) or remove.</p></div>
     ${can("manage") ? html`<div class="actions"><button class="btn" id="ipa">Upload in-house app</button><button class="btn btn-primary" id="store">Add from App Store</button></div>` : ""}</div>
@@ -17,13 +17,28 @@ export async function render(ctx) {
     ${vpp.items.length ? html`<h2 class="section">Apps and Books licenses</h2><section class="panel"><div class="table-wrap"><table class="table"><thead><tr><th>App</th><th class="num">Assigned</th><th class="num">Available</th><th class="num">Total</th><th></th></tr></thead><tbody>
       ${vpp.items.map((v) => html`<tr><td><div class="app-cell">${v.icon_url ? html`<img class="app-icon" src="${v.icon_url}" alt="" loading="lazy">` : html`<span class="app-icon"></span>`}<div><strong>${v.name || "App " + v.adam_id}</strong><span class="cell-sub">${v.product_type === "Book" ? "Book" : "App Store"} ID ${v.adam_id}</span></div></div></td>
         <td class="num">${v.assigned_count}</td><td class="num">${v.available_count}</td><td class="num">${v.total_count}</td>
-        <td class="right">${can("manage") && !res.items.some((a) => String(a.itunes_id) === v.adam_id) ? html`<button class="btn btn-sm" data-add-vpp="${v.adam_id}">Add to catalog</button>` : ""}</td></tr>`)}
+      <td class="right nowrap">${can("manage") ? html`<button class="btn btn-sm" data-vpp-assign data-adam="${v.adam_id}" data-token="${v.vpp_token_id}" data-pricing="${v.pricing_param}">Assign</button>
+        <button class="btn btn-sm" data-vpp-release data-adam="${v.adam_id}" data-token="${v.vpp_token_id}" data-pricing="${v.pricing_param}" ${v.revocable ? "" : "disabled"}>Release</button>
+        ${!res.items.some((a) => String(a.itunes_id) === v.adam_id) ? html`<button class="btn btn-sm" data-add-vpp="${v.adam_id}">Add to catalog</button>` : ""}` : ""}</td></tr>`)}
     </tbody></table></div></section>` : ""}`.s;
   $("#store", root)?.addEventListener("click", () => storeDialog((a) => navigate("/apps/" + a.id)));
   $("#ipa", root)?.addEventListener("click", () => ipaDialog((a) => navigate("/apps/" + a.id)));
   $$("[data-add-vpp]", root).forEach((b) => b.addEventListener("click", async () => {
     try { const a = await api.post("/api/apps", { itunes_id: b.dataset.addVpp, kind: "vpp" }); toast(`${a.name} added`); navigate("/apps/" + a.id); } catch (e) { toastError(e); }
   }));
+  for (const [selector, action] of [["[data-vpp-assign]", "associate"], ["[data-vpp-release]", "disassociate"]]) {
+    $$(selector, root).forEach((b) => b.addEventListener("click", async () => {
+      try {
+        const ids = await pickDevices(action === "associate" ? "Assign Apps and Books licenses" : "Release Apps and Books licenses", action === "associate" ? "Assign" : "Release");
+        if (!ids.length) return;
+        if (action === "disassociate" && !(await confirmDialog("Release licenses from selected devices?", "The selected devices may lose access to the app. This does not uninstall it.", { danger: true, confirmLabel: "Release licenses" }))) return;
+        const url = `/api/vpp/assets/${b.dataset.token}/${encodeURIComponent(b.dataset.adam)}/${encodeURIComponent(b.dataset.pricing)}/${action}`;
+        const res = await api.post(url, { udids: ids });
+        toast(`${action === "associate" ? "Assignment" : "Release"} requested for ${res.devices} device(s) and ${res.user_accounts} user account(s)`);
+        await refresh();
+      } catch (e) { toastError(e); }
+    }));
+  }
 }
 
 function deployment(st, available) {
@@ -100,7 +115,9 @@ async function detail({ root, params, navigate, refresh }) {
   root.innerHTML = html`<div class="crumb"><a href="#/apps">Apps</a></div>
     <div class="page-head"><div class="app-cell" style="align-items:flex-start;gap:14px">${a.icon_url ? html`<img class="app-icon" style="width:56px;height:56px;border-radius:13px" src="${a.icon_url}" alt="">` : ""}
       <div><h1>${a.name}</h1><p class="sub">${KIND[a.kind]}${a.seller ? `, ${a.seller}` : ""}${a.version ? `, version ${a.version}` : ""}</p><p class="sub ident">${a.bundle_id}</p></div></div>
-      <div class="actions">${can("act") ? html`<button class="btn" id="install">Install on devices</button>` : ""}${editable ? html`<button class="btn btn-danger" id="del">Delete</button>` : ""}</div></div>
+      <div class="actions">${can("act") ? html`<button class="btn" id="install">Install on devices</button>` : ""}
+        ${editable && (a.kind === "vpp" || a.use_vpp) ? html`<button class="btn btn-danger" id="remove-release">Remove from devices & release licenses</button>` : ""}
+        ${editable ? html`<button class="btn btn-danger" id="del">Delete</button>` : ""}</div></div>
     <div class="grid-2 top">
       <section class="panel"><div class="panel-head"><h2>Settings</h2></div><form class="panel-pad" id="settings">
         <label class="check"><input type="checkbox" name="remove_on_unenroll" ${a.remove_on_unenroll ? "checked" : ""} ${editable ? "" : "disabled"}><span>Remove the app when the device leaves management</span></label>
@@ -137,8 +154,21 @@ async function detail({ root, params, navigate, refresh }) {
     } catch (err) { toastError(err); }
   });
   $("#del", root)?.addEventListener("click", async () => {
-    if (!(await confirmDialog(`Delete “${a.name}” from the catalog?`, "Assignments are removed. The app stays on devices that already have it.", { danger: true, confirmLabel: "Delete app" }))) return;
+    const message = (a.kind === "vpp" || a.use_vpp)
+      ? "This deletes only the Orchard catalog entry. It does not remove the app from devices or release Apps and Books licenses. Use “Remove from devices & release licenses” to do both."
+      : "Assignments are removed. The app stays on devices that already have it.";
+    if (!(await confirmDialog(`Delete “${a.name}” from the catalog?`, message, { danger: true, confirmLabel: "Delete app" }))) return;
     try { await api.del(`/api/apps/${a.id}`); toast("App deleted"); navigate("/apps"); } catch (e) { toastError(e); }
+  });
+  $("#remove-release", root)?.addEventListener("click", async () => {
+    if (!(await confirmDialog(`Remove “${a.name}” and release its licenses?`,
+      "Orchard will request app removal on devices where it is managed, disassociate the app license from all devices and managed Apple Accounts it knows about, and then delete the catalog entry. Apple processes license changes asynchronously.",
+      { danger: true, confirmLabel: "Remove app & release licenses" }))) return;
+    try {
+      const res = await api.post(`/api/apps/${a.id}/remove-and-disassociate`);
+      toast(`App removed; release requested. ${res.devices_queued} device removal(s) queued.`);
+      navigate("/apps");
+    } catch (e) { toastError(e); }
   });
   $("#install", root)?.addEventListener("click", async () => {
     const ids = await pickDevices(`Install ${a.name}`, "Install");

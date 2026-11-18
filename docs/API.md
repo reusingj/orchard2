@@ -122,6 +122,7 @@ curl -H 'Authorization: Bearer orch_xxxxxxxx_…' https://mdm.example.com/api/de
 | `GET` | `/api/apps/{id}/status` | read |
 | `POST` | `/api/apps/{id}/retry` | operator |
 | `POST` | `/api/apps/{id}/install` | helpdesk |
+| `POST` | `/api/apps/{id}/remove-and-disassociate` | operator |
 
 ## Declarative management
 
@@ -188,6 +189,7 @@ curl -H 'Authorization: Bearer orch_xxxxxxxx_…' https://mdm.example.com/api/de
 | `DELETE` | `/api/vpp/tokens/{id}` | admin |
 | `POST` | `/api/vpp/tokens/{id}/sync` | operator |
 | `GET` | `/api/vpp/assets` | read |
+| `POST` | `/api/vpp/assets/{token_id}/{adam_id}/{pricing}/{associate|disassociate}` | operator |
 
 ## Apple Push (APNs)
 
@@ -229,6 +231,8 @@ curl -H 'Authorization: Bearer orch_xxxxxxxx_…' https://mdm.example.com/api/de
 - `POST /api/devices/{udid}/commands` takes `{"command": "<catalog id>", "params": {…}}`. The catalog (`GET /api/command-catalog`) lists every command with its parameters. Wipe commands (`EraseDevice`, `DeleteUser`) are refused.
 - Saved commands use `{"name":"…","kind":"catalog","command":"<catalog id>","params":{…}}` for catalog templates, or `{"name":"…","kind":"custom","command":"<JSON or plist command dictionary>"}` for custom MDM commands. Create, update and delete require the operator role; execution requires helpdesk. Read-only and helpdesk listings omit command parameter/payload contents.
 - `POST /api/devices/{udid}/actions/{action}` actions: `sync`, `telemetry`, `push`, `reconcile`, `retry-failed`, `clear-queue`, `locate`, `evaluate-compliance`, `renew-identity`, `unenroll`.
+- `POST /api/vpp/assets/{token_id}/{adam_id}/{pricing}/{associate|disassociate}` takes `{"udids":[...]}` and assigns or releases licenses for selected enrolled devices. Changes are processed asynchronously by Apple.
+- `POST /api/apps/{id}/remove-and-disassociate` releases the VPP asset from all device serial numbers and Managed Apple Accounts known to Orchard, queues removal for managed installations, and deletes the app catalog entry. Use this instead of `DELETE /api/apps/{id}` when the licenses should be released too.
 - `POST /api/devices/bulk` takes `udids` plus either `command`/`params`, an `action`, `add_to_group`/`remove_from_group` with `group_id`, or `add_tags` with `tags`.
 - `GET /api/devices/{udid}/telemetry?hours=168` returns battery/storage/network samples and the networks seen; `GET /api/devices/{udid}/locations?days=30` returns location fixes.
 - Uploads (profiles, certificates, tokens) are sent as base64 in JSON (`{"data": "…"}`); enterprise `.ipa` files use `multipart/form-data` with a `file` field.

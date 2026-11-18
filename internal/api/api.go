@@ -308,6 +308,7 @@ func (a *API) Register(mux *http.ServeMux) {
 	a.handle(mux, "GET /api/apps/{id}", PermRead, a.getApp)
 	a.handle(mux, "PUT /api/apps/{id}", PermManage, a.updateApp)
 	a.handle(mux, "DELETE /api/apps/{id}", PermManage, a.deleteApp)
+	a.handle(mux, "POST /api/apps/{id}/remove-and-disassociate", PermManage, a.removeAndDisassociateApp)
 	a.handle(mux, "GET /api/apps/{id}/status", PermRead, a.appStatus)
 	a.handle(mux, "POST /api/apps/{id}/retry", PermManage, a.retryApp)
 	a.handle(mux, "POST /api/apps/{id}/install", PermAct, a.installAppOnDevices)
@@ -362,6 +363,7 @@ func (a *API) Register(mux *http.ServeMux) {
 	a.handle(mux, "DELETE /api/vpp/tokens/{id}", PermAdmin, a.deleteVPPToken)
 	a.handle(mux, "POST /api/vpp/tokens/{id}/sync", PermManage, a.syncVPPToken)
 	a.handle(mux, "GET /api/vpp/assets", PermRead, a.listVPPAssets)
+	a.handle(mux, "POST /api/vpp/assets/{token_id}/{adam_id}/{pricing}/{action}", PermManage, a.vppAssetAssignmentAction)
 
 	// APNs
 	a.handle(mux, "GET /api/apns", PermRead, a.apnsStatus)
@@ -395,4 +397,3 @@ func (a *API) Register(mux *http.ServeMux) {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "unknown API endpoint " + r.Method + " " + r.URL.Path})
 	})
 }
-

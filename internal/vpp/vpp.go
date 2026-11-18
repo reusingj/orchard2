@@ -205,6 +205,19 @@ func (c *Client) Disassociate(ctx context.Context, adamID, pricing string, seria
 	return &out, err
 }
 
+// DisassociateUsers revokes licenses from client user IDs.
+func (c *Client) DisassociateUsers(ctx context.Context, adamID, pricing string, clientUserIDs []string) (*EventResponse, error) {
+	if pricing == "" {
+		pricing = "STDQ"
+	}
+	var out EventResponse
+	err := c.do(ctx, http.MethodPost, "/assets/disassociate", map[string]any{
+		"assets":        []map[string]string{{"adamId": adamID, "pricingParam": pricing}},
+		"clientUserIds": clientUserIDs,
+	}, &out)
+	return &out, err
+}
+
 // Assignment is a license assignment.
 type Assignment struct {
 	AdamID       string `json:"adamId"`
@@ -249,4 +262,3 @@ func (c *Client) AssociateUsers(ctx context.Context, adamID, pricing string, cli
 	}, &out)
 	return &out, err
 }
-
