@@ -227,6 +227,7 @@ func (a *API) Register(mux *http.ServeMux) {
 	a.public(mux, "GET /api/auth/status", a.authStatus)
 	a.public(mux, "POST /api/auth/login", a.login)
 	a.public(mux, "POST /api/auth/setup", a.setup)
+	a.public(mux, "GET /api/brand/{asset}", a.brandImage)
 	a.handle(mux, "POST /api/auth/logout", PermRead, a.logout)
 	a.handle(mux, "GET /api/auth/me", PermRead, a.me)
 	a.handle(mux, "POST /api/auth/password", PermRead, a.changePassword)

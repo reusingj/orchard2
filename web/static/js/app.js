@@ -1,5 +1,5 @@
 // Orchard MDM console bootstrap: authentication, layout and routing.
-import { html, $, $$, api, session, can, toast, toastError, ApiError } from "./lib.js";
+import { html, $, $$, api, session, can, toast, toastError, ApiError, fileToBase64 } from "./lib.js";
 
 const NAV = [
   { title: "Fleet", items: [
@@ -122,7 +122,7 @@ function shell() {
   document.getElementById("app").innerHTML = html`
   <div class="shell">
     <aside class="side">
-      <a class="brand" href="#/"><img aria-hidden="true" style="max-width: 50px; max-height: 60px;" src="/static/icon.svg"><span><b>${session.org_abbreviation} MDM</b><small>${session.org}</small></span></a>
+      <a class="brand" href="#/"><img class="brand-mark" aria-hidden="true" src="/api/brand/logo"><span><b>${session.org_abbreviation} MDM</b><small>${session.org}</small></span></a>
       <nav class="nav" aria-label="Main">
         ${NAV.map((g) => html`<h2>${g.title}</h2>${g.items.map(([href, label, d]) => html`<a href="#${href}"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="${d}"/></svg>${label}</a>`)}`)}
       </nav>
@@ -159,7 +159,7 @@ function shell() {
 
 function authPage(title, sub, body) {
   document.getElementById("app").innerHTML = html`<div class="login"><div class="login-card">
-    <div class="brand"><img aria-hidden="true" style="max-width: 50px; max-height: 60px;" src="/static/icon.svg"><span><b style="font-size:22px">${session.org_abbreviation && session.org_abbreviation !== "Acme" ? html`<small>${session.org_abbreviation}</small>` : ""} MDM</b>${session.org && session.org !== "Default Organization" ? html`<small>${session.org}</small>` : ""}</span></div>
+    <div class="brand"><img class="brand-mark" aria-hidden="true" src="/api/brand/logo"><span><b style="font-size:22px">${session.org_abbreviation && session.org_abbreviation !== "Acme" ? html`<small>${session.org_abbreviation}</small>` : ""} MDM</b>${session.org && session.org !== "Default Organization" ? html`<small>${session.org}</small>` : ""}</span></div>
     <div class="panel panel-pad"><h1 style="font-size:21px;margin:0 0 6px">${title}</h1><p class="hint" style="margin:0 0 16px">${sub}</p>${body}</div>
   </div></div>`.s;
 }
@@ -186,6 +186,7 @@ function setupPage() {
     <label class="field"><span>Setup code</span><input type="text" name="setup_code" class="code" required autocomplete="off" autofocus></label>
     <label class="field"><span>Organization name</span><input type="text" name="org_name" placeholder="Acme Inc."></label>
     <label class="field"><span>Organization name abbreviation</span><input type="text" name="org_name_abbreviation" placeholder="AcIn."></label>
+    <label class="field"><span>Brand logo and Apple touch icon (PNG)</span><input type="file" name="brand_logo" accept="image/png"><small class="hint">Optional. PNG, up to 1 MB and 2048 × 2048 pixels.</small></label>
     <label class="field"><span>Username</span><input type="text" name="username" required autocomplete="username"></label>
     <label class="field"><span>Password</span><input type="password" name="password" required minlength="10" autocomplete="new-password"><small class="hint">At least 10 characters.</small></label>
     <button class="btn btn-primary" style="width:100%" type="submit">Create account</button></form>`);
@@ -193,7 +194,9 @@ function setupPage() {
     e.preventDefault();
     const f = e.target;
     try {
-      const res = await api.post("/api/auth/setup", { setup_code: f.setup_code.value, org_name: f.org_name.value, org_name_abbreviation: f.org_name_abbreviation.value, username: f.username.value, password: f.password.value });
+      const payload = { setup_code: f.setup_code.value, org_name: f.org_name.value, org_name_abbreviation: f.org_name_abbreviation.value, username: f.username.value, password: f.password.value };
+      if (f.brand_logo.files[0]) payload.brand_logo = await fileToBase64(f.brand_logo.files[0]);
+      const res = await api.post("/api/auth/setup", payload);
       session.csrf = res.csrf;
       const st = await api.get("/api/auth/status");
       session.org = st.org_name;

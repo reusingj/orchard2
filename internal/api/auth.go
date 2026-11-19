@@ -194,7 +194,9 @@ func (a *API) setup(w http.ResponseWriter, r *http.Request) error {
 		Password            string `json:"password"`
 		OrgName             string `json:"org_name"`
 		OrgNameAbbreviation string `json:"org_name_abbreviation"`
+		BrandLogo           string `json:"brand_logo"`
 	}
+	r.Body = http.MaxBytesReader(w, r.Body, 2<<20)
 	if err := decode(r, &req); err != nil {
 		return err
 	}
@@ -205,6 +207,11 @@ func (a *API) setup(w http.ResponseWriter, r *http.Request) error {
 	if subtle.ConstantTimeCompare([]byte(strings.ToUpper(strings.TrimSpace(req.SetupCode))), []byte(a.SetupToken())) != 1 {
 		a.recordFailure(ip)
 		return errf(http.StatusForbidden, "the setup code is incorrect (it is printed in the server log)")
+	}
+	if req.BrandLogo != "" {
+		if err := a.saveBrandLogo(req.BrandLogo); err != nil {
+			return err
+		}
 	}
 	if err := a.CreateUser(req.Username, req.Password, "admin", "Administrator"); err != nil {
 		return err

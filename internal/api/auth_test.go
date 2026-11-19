@@ -2,7 +2,11 @@ package api
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
+	"image"
+	"image/color"
+	"image/png"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,14 +16,22 @@ import (
 	"github.com/reusingj/orchard2/internal/testenv"
 )
 
-func TestSetupStoresOrganizationNameAbbreviation(t *testing.T) {
+func TestSetupStoresOrganizationNameAbbreviationAndBrandLogo(t *testing.T) {
 	env := testenv.New(t)
 	a := New(Deps{Cfg: &config.Config{}, Store: env.Store, MDM: env.MDM})
+	var logo bytes.Buffer
+	pixels := image.NewRGBA(image.Rect(0, 0, 1, 1))
+	pixels.SetRGBA(0, 0, color.RGBA{R: 10, G: 20, B: 30, A: 255})
+	if err := png.Encode(&logo, pixels); err != nil {
+		t.Fatal(err)
+	}
+	encodedLogo := base64.StdEncoding.EncodeToString(logo.Bytes())
 	body, err := json.Marshal(map[string]string{
 		"setup_code":            a.SetupToken(),
 		"username":              "admin",
 		"password":              "long-enough-password",
 		"org_name_abbreviation": "Orchard",
+		"brand_logo":            encodedLogo,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -35,5 +47,21 @@ func TestSetupStoresOrganizationNameAbbreviation(t *testing.T) {
 	}
 	if got := env.Store.GetSetting(mdm.SettingOrgNameAbbreviation, ""); got != "Orchard" {
 		t.Fatalf("stored org name abbreviation = %q, want %q", got, "Orchard")
+	}
+	if got := env.Store.GetSetting(brandLogoSetting, ""); got != encodedLogo {
+		t.Fatal("setup did not persist the brand logo")
+	}
+
+	imageReq := httptest.NewRequest(http.MethodGet, "/api/brand/apple-touch-icon.png", nil)
+	imageReq.SetPathValue("asset", "apple-touch-icon.png")
+	imageRec := httptest.NewRecorder()
+	if err := a.brandImage(imageRec, imageReq); err != nil {
+		t.Fatal(err)
+	}
+	if imageRec.Code != http.StatusOK || imageRec.Header().Get("Content-Type") != "image/png" {
+		t.Fatalf("brand image response = %d %q, want 200 image/png", imageRec.Code, imageRec.Header().Get("Content-Type"))
+	}
+	if !bytes.Equal(imageRec.Body.Bytes(), logo.Bytes()) {
+		t.Fatal("served brand logo differs from uploaded PNG")
 	}
 }

@@ -5,7 +5,7 @@ body { min-height: 100vh; display: flex; flex-direction: column; }
   padding: max(14px, env(safe-area-inset-top)) 20px 14px;
   background: var(--sidebar); color: var(--sidebar-ink);
 }
-.masthead .mark { width: 28px; height: 28px; }
+.masthead .mark { width: 28px; height: 28px; object-fit: contain; }
 .masthead .org { font-weight: 700; font-size: 17px; letter-spacing: 0.005em; }
 .sheet { width: 100%; max-width: 34rem; margin: 0 auto; padding: 28px 20px 40px; flex: 1; }
 h1 { font-size: 27px; line-height: 1.18; margin: 0 0 12px; font-weight: 700; letter-spacing: -0.01em; }
