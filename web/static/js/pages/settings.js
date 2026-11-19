@@ -38,6 +38,7 @@ async function general(host, ctx) {
   host.innerHTML = html`<form class="stack" id="f" style="max-width:820px">
     <section class="panel panel-pad"><h3>Organization</h3>
       <div class="inline-fields"><label class="field"><span>Organization name</span><input type="text" name="org_name" value="${v.org_name}" ${ro()}></label>
+        <label class="field"><span>Organization name abbreviation</span><input type="text" name="org_name_abbreviation" value="${v.org_name_abbreviation}" ${ro()}></label>
         <label class="field"><span>Public server URL</span><input type="url" name="public_url" value="${s.public_url_locked ? s.effective_public_url : v.public_url}" ${s.public_url_locked ? "disabled" : ro()} placeholder="https://mdm.example.com">
           <small class="hint">${s.public_url_locked ? "Set by the -url flag." : "The HTTPS address devices use. Changing it after enrolling devices breaks their enrollment."}</small></label></div>
       <div class="inline-fields"><label class="field"><span>Support email</span><input type="email" name="support_email" value="${v.support_email}" ${ro()}></label>
@@ -56,7 +57,7 @@ async function general(host, ctx) {
     ${can("admin") ? html`<div><button class="btn btn-primary" type="submit">Save settings</button></div>` : ""}</form>`.s;
   $("#f", host).addEventListener("submit", async (e) => {
     e.preventDefault();
-    const keys = ["org_name", "support_email", "support_phone", "support_url", "enroll_require_token", "portal_enabled", "sign_profiles", "enroll_consent_text", "extra_trust_certs", "compliance_default", "ade_allow_unknown_serials"];
+    const keys = ["org_name", "org_name_abbreviation", "support_email", "support_phone", "support_url", "enroll_require_token", "portal_enabled", "sign_profiles", "enroll_consent_text", "extra_trust_certs", "compliance_default", "ade_allow_unknown_serials"];
     if (!s.public_url_locked) keys.push("public_url");
     try { await saveSettings(e.target, keys); } catch (err) { toastError(err); }
   });

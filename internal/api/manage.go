@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -1057,19 +1058,35 @@ func validateDecl(req *declReq) error {
 	}
 	compact, _ := json.Marshal(m)
 	req.Payload = compact
-	if strings.TrimSpace(req.Identifier) == "" {
-		req.Identifier = "com.orchardmdm.declaration." + strings.ToLower(randomHex(4))
-	}
 	if strings.HasPrefix(req.Identifier, "orchard.") {
 		return badRequest("identifiers starting with orchard. are reserved")
 	}
 	return nil
 }
 
+func reversedDomain(publicURL string) (string, error) {
+	u, err := url.Parse(publicURL)
+	if err != nil || u.Hostname() == "" {
+		return "", badRequest("configure a public URL to generate a declaration identifier")
+	}
+	labels := strings.Split(strings.TrimSuffix(strings.ToLower(u.Hostname()), "."), ".")
+	for i, j := 0, len(labels)-1; i < j; i, j = i+1, j-1 {
+		labels[i], labels[j] = labels[j], labels[i]
+	}
+	return strings.Join(labels, "."), nil
+}
+
 func (a *API) createDeclaration(w http.ResponseWriter, r *http.Request, p *Principal) error {
 	var req declReq
 	if err := decode(r, &req); err != nil {
 		return err
+	}
+	if strings.TrimSpace(req.Identifier) == "" {
+		domain, err := reversedDomain(a.MDM.PublicURL())
+		if err != nil {
+			return err
+		}
+		req.Identifier = domain + ".declaration." + strings.ToLower(randomHex(4))
 	}
 	if err := validateDecl(&req); err != nil {
 		return err
@@ -1267,4 +1284,3 @@ func (a *API) complianceEvaluate(w http.ResponseWriter, r *http.Request, p *Prin
 	a.audit(r, p, "compliance.evaluate", "all", nil)
 	return a.complianceSummary(w, r, p)
 }
-

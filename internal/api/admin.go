@@ -656,7 +656,7 @@ func (a *API) apnsTest(w http.ResponseWriter, r *http.Request, p *Principal) err
 // ---- settings ----
 
 var publicSettings = []string{
-	mdm.SettingOrgName, mdm.SettingPublicURL, mdm.SettingSupportEmail, mdm.SettingSupportPhone, mdm.SettingSupportURL, mdm.SettingEnrollRequireToken,
+	mdm.SettingOrgName, mdm.SettingOrgNameAbbreviation, mdm.SettingPublicURL, mdm.SettingSupportEmail, mdm.SettingSupportPhone, mdm.SettingSupportURL, mdm.SettingEnrollRequireToken,
 	mdm.SettingInventoryHours, mdm.SettingTelemetryMinutes, mdm.SettingLostModeLocMinutes, mdm.SettingSignProfiles, mdm.SettingSCEPValidityDays,
 	mdm.SettingCommandRetention, mdm.SettingTelemetryRetention, mdm.SettingPortalEnabled, mdm.SettingADESyncMinutes, mdm.SettingExtraTrustCerts,
 	mdm.SettingEnrollConsentText, mdm.SettingCommandExpiryDays, mdm.SettingRecordConnectionIPs, "compliance_default", "ade_allow_unknown_serials",
