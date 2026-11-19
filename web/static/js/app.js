@@ -195,7 +195,10 @@ function setupPage() {
     try {
       const res = await api.post("/api/auth/setup", { setup_code: f.setup_code.value, org_name: f.org_name.value, org_name_abbreviation: f.org_name_abbreviation.value, username: f.username.value, password: f.password.value });
       session.csrf = res.csrf;
-      if (f.org_name.value) session.org = f.org_name.value;
+      const st = await api.get("/api/auth/status");
+      session.org = st.org_name;
+      session.org_abbreviation = st.org_name_abbreviation;
+      document.title = `${st.org_name_abbreviation} MDM – ${st.org_name}`;
       await loadMe();
       shell();
       toast("Welcome to Orchard. Start with Settings → Apple Push to connect your push certificate.");

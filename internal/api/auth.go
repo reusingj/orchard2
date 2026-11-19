@@ -189,11 +189,11 @@ func (a *API) setup(w http.ResponseWriter, r *http.Request) error {
 		return errf(http.StatusConflict, "setup has already been completed")
 	}
 	var req struct {
-		SetupCode string `json:"setup_code"`
-		Username  string `json:"username"`
-		Password  string `json:"password"`
-		OrgName   string `json:"org_name"`
-		OrgNameAbbreviation   string `json:"org_name_abbreviation"`
+		SetupCode           string `json:"setup_code"`
+		Username            string `json:"username"`
+		Password            string `json:"password"`
+		OrgName             string `json:"org_name"`
+		OrgNameAbbreviation string `json:"org_name_abbreviation"`
 	}
 	if err := decode(r, &req); err != nil {
 		return err
@@ -210,10 +210,14 @@ func (a *API) setup(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	if strings.TrimSpace(req.OrgName) != "" {
-		_ = a.Store.SetSetting(mdm.SettingOrgName, strings.TrimSpace(req.OrgName))
+		if err := a.Store.SetSetting(mdm.SettingOrgName, strings.TrimSpace(req.OrgName)); err != nil {
+			return err
+		}
 	}
 	if strings.TrimSpace(req.OrgNameAbbreviation) != "" {
-		_ = a.Store.SetSetting(mdm.SettingOrgNameAbbreviation, strings.TrimSpace(req.OrgNameAbbreviation))
+		if err := a.Store.SetSetting(mdm.SettingOrgNameAbbreviation, strings.TrimSpace(req.OrgNameAbbreviation)); err != nil {
+			return err
+		}
 	}
 	u, err := a.Store.GetUserByName(req.Username)
 	if err != nil {
@@ -442,4 +446,3 @@ func (a *API) deleteAPIKey(w http.ResponseWriter, r *http.Request, p *Principal)
 	a.audit(r, p, "apikey.deleted", r.PathValue("id"), nil)
 	return ok(w, map[string]bool{"ok": true})
 }
-
