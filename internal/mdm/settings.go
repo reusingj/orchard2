@@ -41,8 +41,8 @@ const (
 
 // SettingDefaults are applied when a key is unset.
 var SettingDefaults = map[string]string{
-	SettingOrgName:             "Default Organization",
-	SettingOrgNameAbbreviation: "Acme",
+	SettingOrgName:             "Orchard2 Organization",
+	SettingOrgNameAbbreviation: "O2",
 	SettingOrgCountryCode: 		"us",
 	SettingEnrollRequireToken:  "1",
 	SettingInventoryHours:      "4",

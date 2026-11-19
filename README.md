@@ -16,8 +16,8 @@ https://github.com/yeungalan/orchard-mdm
 - Updated the theme palettes from green to red and blue.
 - Added saved custom commands for quick reuse on devices.
 - Added VPP asset and license management, including license disassociation.
-
-
+- Added resize horizontal functionality for better use of textareas in payload cards
+- Changed default declaration profile identifier from com.orchardmdm.declaration.randomstring to com.yourdomain.yoursubdomain.declaraion.randomstring
 
 **Orchard2 deliberately cannot wipe devices.** See [No remote wipe](#no-remote-wipe).
 
