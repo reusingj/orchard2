@@ -115,7 +115,7 @@ func (a *API) authStatus(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	return ok(w, map[string]any{"setup_required": n == 0, "org_name": a.MDM.Setting(mdm.SettingOrgName), "version": a.Version})
+	return ok(w, map[string]any{"setup_required": n == 0, "org_name": a.MDM.Setting(mdm.SettingOrgName), "org_name_abbreviation": a.MDM.Setting(mdm.SettingOrgNameAbbreviation), "version": a.Version})
 }
 
 func (a *API) tooManyFailures(ip string) bool {
