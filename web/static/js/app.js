@@ -159,7 +159,7 @@ function shell() {
 
 function authPage(title, sub, body) {
   document.getElementById("app").innerHTML = html`<div class="login"><div class="login-card">
-    <div class="brand"><img class="brand-mark" aria-hidden="true" src="/api/brand/logo"><span><b style="font-size:22px">${session.org_abbreviation && session.org_abbreviation !== "Acme" ? html`<small>${session.org_abbreviation}</small>` : ""} MDM</b>${session.org && session.org !== "Default Organization" ? html`<small>${session.org}</small>` : ""}</span></div>
+    <div class="brand"><img class="brand-mark" aria-hidden="true" src="/api/brand/logo"><span><b style="font-size:22px">${session.org_abbreviation && session.org_abbreviation !== "Acme" ? html`${session.org_abbreviation}` : ""} MDM</b>${session.org && session.org !== "Default Organization" ? html`<small>${session.org}</small>` : ""}</span></div>
     <div class="panel panel-pad"><h1 style="font-size:21px;margin:0 0 6px">${title}</h1><p class="hint" style="margin:0 0 16px">${sub}</p>${body}</div>
   </div></div>`.s;
 }
@@ -182,7 +182,7 @@ function loginPage() {
 }
 
 function setupPage() {
-  authPage("Create the administrator account", "This is a new Orchard MDM server. Enter the setup code printed in the server log, then choose the first administrator's sign-in details.", html`<form id="setup-form">
+  authPage("Create the administrator account", "This is a new Orchard2 server. Enter the setup code printed in the server log, then choose the first administrator's sign-in details.", html`<form id="setup-form">
     <label class="field"><span>Setup code</span><input type="text" name="setup_code" class="code" required autocomplete="off" autofocus></label>
     <label class="field"><span>Organization name</span><input type="text" name="org_name" placeholder="Acme Inc."></label>
     <label class="field"><span>Organization name abbreviation</span><input type="text" name="org_name_abbreviation" placeholder="AcIn."></label>

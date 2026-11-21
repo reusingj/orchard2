@@ -32,7 +32,7 @@ export async function render({ root }) {
     const ctl = modal({
       title: isEdit ? "Edit saved command" : "Save command",
       wide: true,
-      body: html`<label class="field"><span>Name</span><input name="name" maxlength="120" required value="${item?.name || ""}" placeholder="e.g. Refresh device inventory"></label>
+      body: html`<label class="field"><span>Name</span><input type="text" name="name" maxlength="120" required value="${item?.name || ""}" placeholder="e.g. Refresh device inventory"></label>
         <label class="field"><span>Command type</span><select name="kind"><option value="catalog" ${!item || item.kind === "catalog" ? "selected" : ""}>Command catalog template</option><option value="custom" ${item?.kind === "custom" ? "selected" : ""}>Custom MDM command</option></select></label>
         <div data-kind="catalog" ${item?.kind === "custom" ? 'style="display:none"' : ""}>
           <label class="field"><span>Catalog command</span><select name="catalog-command">${specs.map((s) => html`<option value="${s.id}" ${item?.kind === "catalog" && item.command === s.id ? "selected" : ""}>${s.category} — ${s.label}</option>`)}</select></label>
