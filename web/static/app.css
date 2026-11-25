@@ -108,6 +108,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .table tbody tr:hover { background: var(--surface-2); }
 .table tr.clickable { cursor: pointer; }
 .table td.num, .table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.table-actions { display: flex; justify-content: flex-end; gap: 6px; }
 .table .primary { font-weight: 600; color: var(--ink); text-decoration: none; }
 .table .primary:hover { text-decoration: underline; }
 .table .sel { width: 34px; }

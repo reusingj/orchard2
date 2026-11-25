@@ -14,8 +14,8 @@ export async function render({ root }) {
       <section class="panel" id="saved-list">${res.items.length ? html`<div class="table-wrap"><table class="table"><thead><tr><th>Name</th><th>Type</th><th>Command</th><th>Updated</th><th></th></tr></thead><tbody>
         ${res.items.map((item) => html`<tr><td><strong>${item.name}</strong></td><td>${item.kind === "custom" ? "Custom MDM" : "Catalog template"}</td>
           <td>${item.kind === "custom" ? (item.request_type || customRequestType(item.command)) : (specById[item.command]?.label || item.command)}</td><td class="nowrap">${new Date(item.updated_at * 1000).toLocaleDateString()}</td>
-          <td class="right nowrap">${can("act") ? html`<button class="btn btn-sm btn-primary" data-run="${item.id}">Send</button>${(item.quicksend_group_ids || []).length ? html`<button class="btn btn-sm" data-quicksend="${item.id}">Quicksend</button>` : ""}` : ""}
-            ${can("manage") ? html`<button class="btn btn-sm" data-edit="${item.id}">Edit</button><button class="btn btn-sm btn-ghost" data-delete="${item.id}">Delete</button>` : ""}</td></tr>`)}</tbody></table></div>` :
+          <td class="nowrap"><div class="table-actions">${can("act") ? html`<button class="btn btn-sm btn-primary" data-run="${item.id}">Send</button>${(item.quicksend_group_ids || []).length ? html`<button class="btn btn-sm" data-quicksend="${item.id}">Quicksend</button>` : ""}` : ""}
+            ${can("manage") ? html`<button class="btn btn-sm" data-edit="${item.id}">Edit</button><button class="btn btn-sm btn-ghost" data-delete="${item.id}">Delete</button>` : ""}</div></td></tr>`)}</tbody></table></div>` :
         emptyState("No saved commands", "Create a template from the command catalog or add your own MDM command.", can("manage") ? html`<button class="btn btn-primary" id="new-command-empty">New command</button>` : "")}</section>`.s;
     $("#new-command", root)?.addEventListener("click", () => editCommand());
     $("#new-command-empty", root)?.addEventListener("click", () => editCommand());
