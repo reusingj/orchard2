@@ -267,6 +267,7 @@ func (a *API) Register(mux *http.ServeMux) {
 	a.handle(mux, "POST /api/saved-commands", PermManage, a.createSavedCommand)
 	a.handle(mux, "PUT /api/saved-commands/{id}", PermManage, a.updateSavedCommand)
 	a.handle(mux, "DELETE /api/saved-commands/{id}", PermManage, a.deleteSavedCommand)
+	a.handle(mux, "POST /api/saved-commands/{id}/send", PermAct, a.sendSavedCommand)
 	a.handle(mux, "GET /api/commands", PermRead, a.listCommands)
 	a.handle(mux, "GET /api/commands/{uuid}", PermRead, a.getCommand)
 	a.handle(mux, "DELETE /api/commands/{uuid}", PermAct, a.cancelCommand)

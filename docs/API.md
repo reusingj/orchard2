@@ -54,6 +54,7 @@ curl -H 'Authorization: Bearer orch_xxxxxxxx_…' https://mdm.example.com/api/de
 | `GET` | `/api/devices/{udid}/compliance` | read |
 | `POST` | `/api/devices/{udid}/commands` | helpdesk |
 | `POST` | `/api/devices/{udid}/saved-commands/{id}` | helpdesk |
+| `POST` | `/api/saved-commands/{id}/send` | helpdesk |
 | `POST` | `/api/devices/{udid}/actions/{action}` | helpdesk |
 | `GET` | `/api/devices/{udid}/secrets` | operator |
 
@@ -229,7 +230,7 @@ curl -H 'Authorization: Bearer orch_xxxxxxxx_…' https://mdm.example.com/api/de
 
 - `GET /api/devices` accepts `q`, `status` (`enrolled`, `pending`, `unenrolled`), `compliance`, `model`, `os`, `ownership`, `supervised` (`1`/`0`), `group`, `sort` (`name`, `os`, `battery`, `last_seen`, …), `dir=desc`, `limit`, `offset`.
 - `POST /api/devices/{udid}/commands` takes `{"command": "<catalog id>", "params": {…}}`. The catalog (`GET /api/command-catalog`) lists every command with its parameters. Wipe commands (`EraseDevice`, `DeleteUser`) are refused.
-- Saved commands use `{"name":"…","kind":"catalog","command":"<catalog id>","params":{…}}` for catalog templates, or `{"name":"…","kind":"custom","command":"<JSON or plist command dictionary>"}` for custom MDM commands. Create, update and delete require the operator role; execution requires helpdesk. Read-only and helpdesk listings omit command parameter/payload contents.
+- Saved commands use `{"name":"…","kind":"catalog","command":"<catalog id>","params":{…},"quicksend_group_ids":[1,2]}` for catalog templates, or `{"name":"…","kind":"custom","command":"<JSON or plist command dictionary>","quicksend_group_ids":[1,2]}` for custom MDM commands. Create, update and delete require the operator role; execution requires helpdesk. Read-only and helpdesk listings omit command parameter/payload contents. `POST /api/saved-commands/{id}/send` accepts `device_ids` and/or `group_ids` to queue a command for enrolled devices; use `{"quicksend":true}` to send it to the saved quicksend groups.
 - `POST /api/devices/{udid}/actions/{action}` actions: `sync`, `telemetry`, `push`, `reconcile`, `retry-failed`, `clear-queue`, `locate`, `evaluate-compliance`, `renew-identity`, `unenroll`.
 - `POST /api/vpp/assets/{token_id}/{adam_id}/{pricing}/{associate|disassociate}` takes `{"udids":[...]}` and assigns or releases licenses for selected enrolled devices. Changes are processed asynchronously by Apple.
 - `POST /api/apps/{id}/remove-and-disassociate` releases the VPP asset from all device serial numbers and Managed Apple Accounts known to Orchard, queues removal for managed installations, and deletes the app catalog entry. Use this instead of `DELETE /api/apps/{id}` when the licenses should be released too.

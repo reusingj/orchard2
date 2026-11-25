@@ -566,5 +566,13 @@ CREATE TABLE saved_commands (
 	updated_at INTEGER NOT NULL
 )
 `,
+	// 4: groups targeted by saved-command quicksend
+	`
+CREATE TABLE saved_command_quicksend_groups (
+	saved_command_id INTEGER NOT NULL REFERENCES saved_commands(id) ON DELETE CASCADE,
+	group_id         INTEGER NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+	PRIMARY KEY (saved_command_id, group_id)
+)
+`,
 }
 
