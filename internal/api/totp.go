@@ -210,7 +210,32 @@ func (a *API) beginTOTPSetup(w http.ResponseWriter, r *http.Request, p *Principa
 		return err
 	}
 	if u.TOTPEnabled {
-		return badRequest("two-factor authentication is already enabled")
+		var req struct {
+			Password string `json:"password"`
+			Code     string `json:"code"`
+		}
+		if err := decode(r, &req); err != nil {
+			return err
+		}
+		ip := mdm.ClientIP(r, a.Cfg.TrustProxy)
+		if a.tooManyFailures(ip) {
+			return errf(429, "too many attempts; try again in a few minutes")
+		}
+		if bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(req.Password)) != nil {
+			a.recordFailure(ip)
+			return badRequest("password or authenticator code is incorrect")
+		}
+		counter, valid := matchingTOTPCounter(u.TOTPSecret, req.Code, time.Now())
+		if valid {
+			valid, err = a.Store.UseTOTPCounter(u.ID, counter)
+			if err != nil {
+				return err
+			}
+		}
+		if !valid {
+			a.recordFailure(ip)
+			return badRequest("password or authenticator code is incorrect")
+		}
 	}
 	setup, err := a.newPendingTOTP(u.ID, false, u.Username)
 	if err != nil {
@@ -222,6 +247,10 @@ func (a *API) beginTOTPSetup(w http.ResponseWriter, r *http.Request, p *Principa
 func (a *API) confirmTOTPSetup(w http.ResponseWriter, r *http.Request, p *Principal) error {
 	if p.Kind != "session" {
 		return badRequest("API keys cannot configure two-factor authentication")
+	}
+	previous, err := a.Store.GetUser(p.ID)
+	if err != nil {
+		return err
 	}
 	var req struct {
 		SetupToken string `json:"setup_token"`
@@ -245,7 +274,11 @@ func (a *API) confirmTOTPSetup(w http.ResponseWriter, r *http.Request, p *Princi
 	if _, err := a.confirmPendingTOTP(req.SetupToken, req.Code, p.ID, false); err != nil {
 		return err
 	}
-	a.audit(r, p, "auth.totp_enabled", "", nil)
+	if previous.TOTPEnabled {
+		a.audit(r, p, "auth.totp_replaced", "", nil)
+	} else {
+		a.audit(r, p, "auth.totp_enabled", "", nil)
+	}
 	return ok(w, map[string]bool{"totp_enabled": true})
 }
 

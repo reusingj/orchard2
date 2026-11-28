@@ -29,7 +29,7 @@ async function security(host, ctx) {
     <section class="panel panel-pad"><h3>Authenticator app</h3>
       <p>${user.totp_enabled ? "Two-factor authentication is enabled for your account." : "Protect your account with a time-based one-time password (TOTP), supported by Google Authenticator and similar apps."}</p>
       ${user.totp_enabled
-        ? html`${enforced ? html`<p class="hint">Your administrator requires two-factor authentication. Turning it off is blocked.</p>` : ""}<button class="btn" type="button" id="totp-disable">Turn off two-factor authentication</button>`
+        ? html`${enforced ? html`<p class="hint">Your administrator requires two-factor authentication. Turning it off is blocked.</p>` : ""}<div class="row"><button class="btn" type="button" id="totp-change">Change authenticator app</button><button class="btn" type="button" id="totp-disable">Turn off two-factor authentication</button></div>`
         : html`<button class="btn btn-primary" type="button" id="totp-enable">Set up authenticator app</button>`}
     </section>
     ${admin ? html`<section class="panel panel-pad"><h3>System-wide policy</h3>
@@ -39,9 +39,9 @@ async function security(host, ctx) {
       </form>
     </section>` : ""}
   </div>`.s;
-  $("#totp-enable", host)?.addEventListener("click", async () => {
+  const openTOTPSetup = async (password = "", code = "") => {
     try {
-      const setup = await api.post("/api/auth/totp/setup");
+      const setup = await api.post("/api/auth/totp/setup", password || code ? { password, code } : undefined);
       modal({ title: "Set up authenticator app",
         body: html`<p>Scan this QR code with your authenticator app, then enter the six-digit code it displays.</p>
           <div style="text-align:center"><img src="${setup.qr_data}" alt="Authenticator setup QR code" width="220" height="220"></div>
@@ -51,11 +51,20 @@ async function security(host, ctx) {
           const code = $("input[name=code]", m.el).value;
           await api.post("/api/auth/totp/confirm", { setup_token: setup.setup_token, code });
           user.totp_enabled = true;
-          toast("Two-factor authentication enabled");
+          toast(password || code ? "Authenticator app changed" : "Two-factor authentication enabled");
           ctx.refresh();
         } }] });
     } catch (err) { toastError(err); }
-  });
+  };
+  $("#totp-enable", host)?.addEventListener("click", () => openTOTPSetup());
+  $("#totp-change", host)?.addEventListener("click", () => modal({ title: "Change authenticator app",
+    body: html`<p>Confirm with your password and the code from your current authenticator app.</p>
+      <label class="field"><span>Password</span><input type="password" name="password" autocomplete="current-password" required></label>
+      <label class="field"><span>Current authenticator code</span><input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>`,
+    actions: [{ id: "cancel", label: "Cancel" }, { id: "continue", label: "Continue", kind: "primary", submit: true, onClick: async (m) => {
+      const form = $("form", m.el);
+      await openTOTPSetup(form.elements.password.value, form.elements.code.value);
+    } }] }));
   $("#totp-disable", host)?.addEventListener("click", () => modal({ title: "Turn off two-factor authentication",
     body: html`<p>Confirm with your password and current authenticator code.</p>
       <label class="field"><span>Password</span><input type="password" name="password" autocomplete="current-password" required></label>

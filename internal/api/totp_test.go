@@ -185,3 +185,75 @@ func TestUserCanEnableAndDisableTOTP(t *testing.T) {
 		t.Fatal("TOTP was not disabled")
 	}
 }
+
+func TestUserCanReplaceTOTPAuthenticator(t *testing.T) {
+	env := testenv.New(t)
+	a := New(Deps{Cfg: &config.Config{}, Store: env.Store, MDM: env.MDM})
+	if err := a.CreateUser("staff", "long-enough-password", "operator", "Staff"); err != nil {
+		t.Fatal(err)
+	}
+	user, err := env.Store.GetUserByName("staff")
+	if err != nil {
+		t.Fatal(err)
+	}
+	principal := &Principal{Kind: "session", ID: user.ID, Name: user.Username, Role: user.Role}
+
+	setupRec := httptest.NewRecorder()
+	if err := a.beginTOTPSetup(setupRec, httptest.NewRequest(http.MethodPost, "/api/auth/totp/setup", nil), principal); err != nil {
+		t.Fatal(err)
+	}
+	var setup struct {
+		SetupToken string `json:"setup_token"`
+		Secret     string `json:"secret"`
+	}
+	if err := json.Unmarshal(setupRec.Body.Bytes(), &setup); err != nil {
+		t.Fatal(err)
+	}
+	initialCounter := uint64(time.Now().Unix() / 30)
+	initialCode, err := totpCode(setup.Secret, initialCounter)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := json.Marshal(map[string]string{"setup_token": setup.SetupToken, "code": initialCode})
+	if err := a.confirmTOTPSetup(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/auth/totp/confirm", bytes.NewReader(body)), principal); err != nil {
+		t.Fatal(err)
+	}
+
+	nextCounter := int64(initialCounter + 1)
+	currentCode, err := totpCode(setup.Secret, uint64(nextCounter))
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ = json.Marshal(map[string]string{"password": "long-enough-password", "code": currentCode})
+	replaceRec := httptest.NewRecorder()
+	if err := a.beginTOTPSetup(replaceRec, httptest.NewRequest(http.MethodPost, "/api/auth/totp/setup", bytes.NewReader(body)), principal); err != nil {
+		t.Fatal(err)
+	}
+	var replacement struct {
+		SetupToken string `json:"setup_token"`
+		Secret     string `json:"secret"`
+	}
+	if err := json.Unmarshal(replaceRec.Body.Bytes(), &replacement); err != nil {
+		t.Fatal(err)
+	}
+	if replacement.Secret == "" || replacement.Secret == setup.Secret {
+		t.Fatal("TOTP replacement did not generate a new secret")
+	}
+
+	replacementCounter := uint64(time.Now().Unix() / 30)
+	replacementCode, err := totpCode(replacement.Secret, replacementCounter)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ = json.Marshal(map[string]string{"setup_token": replacement.SetupToken, "code": replacementCode})
+	if err := a.confirmTOTPSetup(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/auth/totp/confirm", bytes.NewReader(body)), principal); err != nil {
+		t.Fatal(err)
+	}
+	user, err = env.Store.GetUserByName("staff")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !user.TOTPEnabled || user.TOTPSecret != replacement.Secret {
+		t.Fatal("confirmed TOTP replacement was not persisted")
+	}
+}
