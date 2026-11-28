@@ -58,11 +58,12 @@ type API struct {
 
 	totpMu      sync.Mutex
 	totpPending map[string]pendingTOTPSetup
+	totpLogins  map[string]pendingTOTPLogin
 }
 
 // New creates the API.
 func New(d Deps) *API {
-	return &API{Deps: d, loginFails: map[string][]time.Time{}, totpPending: map[string]pendingTOTPSetup{}}
+	return &API{Deps: d, loginFails: map[string][]time.Time{}, totpPending: map[string]pendingTOTPSetup{}, totpLogins: map[string]pendingTOTPLogin{}}
 }
 
 // Perm is a permission level.
@@ -229,6 +230,7 @@ func (a *API) Register(mux *http.ServeMux) {
 	// authentication
 	a.public(mux, "GET /api/auth/status", a.authStatus)
 	a.public(mux, "POST /api/auth/login", a.login)
+	a.public(mux, "POST /api/auth/totp/login", a.loginTOTP)
 	a.public(mux, "POST /api/auth/totp/enroll", a.enrollTOTPAtLogin)
 	a.public(mux, "POST /api/auth/setup", a.setup)
 	a.public(mux, "GET /api/brand/{asset}", a.brandImage)

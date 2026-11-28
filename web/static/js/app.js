@@ -155,6 +155,27 @@ function shell() {
   // tapping outside the open mobile menu closes it
   document.addEventListener("click", (e) => { const side = $(".side"); if (side?.classList.contains("open") && !side.contains(e.target)) side.classList.remove("open"); });
   route();
+  showPendingSuccessToast();
+}
+
+function showPendingSuccessToast() {
+  try {
+    const message = sessionStorage.getItem("orchard-success-toast");
+    if (!message) return;
+    sessionStorage.removeItem("orchard-success-toast");
+    toast(message);
+  } catch {}
+}
+
+async function reloadWithSuccessToast(message, refresh) {
+  try {
+    sessionStorage.setItem("orchard-success-toast", message);
+    window.location.reload();
+  } catch {
+    try { sessionStorage.removeItem("orchard-success-toast"); } catch {}
+    await refresh();
+    toast(message);
+  }
 }
 
 function authPage(title, sub, body) {
@@ -168,19 +189,37 @@ function loginPage() {
   authPage("Sign in", "Sign in to manage your iPhone and iPad fleet.", html`<form id="login-form">
     <label class="field"><span>Username</span><input type="text" name="username" autocomplete="username" required autofocus></label>
     <label class="field"><span>Password</span><input type="password" name="password" autocomplete="current-password" required></label>
-    <label class="field"><span>Authenticator code <small class="hint">(if enabled)</small></span><input type="text" name="totp_code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6"></label>
     <button class="btn btn-primary" style="width:100%" type="submit">Sign in</button></form>`);
   $("#login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = e.target;
     try {
-      const res = await api.post("/api/auth/login", { username: f.username.value, password: f.password.value, totp_code: f.totp_code.value }, { allow401: true });
+      const res = await api.post("/api/auth/login", { username: f.username.value, password: f.password.value }, { allow401: true });
+      if (res.totp_required) return totpLoginPage(res);
       if (res.totp_setup_required) return forcedTOTPSetupPage(res);
       session.csrf = res.csrf;
       await loadMe();
       shell();
     } catch (err) { toastError(err); }
   });
+}
+
+function totpLoginPage(challenge) {
+  authPage("Two-factor authentication", `Enter the authenticator code for ${challenge.username}.`, html`<form id="totp-login-form">
+    <label class="field"><span>Authenticator code</span><input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required autofocus></label>
+    <button class="btn btn-primary" style="width:100%" type="submit">Verify and sign in</button>
+    <button class="btn" style="width:100%;margin-top:8px" type="button" id="back-to-login">Back to sign in</button></form>`);
+  $("#totp-login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    try {
+      const res = await api.post("/api/auth/totp/login", { login_token: challenge.login_token, code: form.code.value }, { allow401: true });
+      session.csrf = res.csrf;
+      await loadMe();
+      shell();
+    } catch (err) { toastError(err); }
+  });
+  $("#back-to-login").addEventListener("click", loginPage);
 }
 
 function forcedTOTPSetupPage(setup) {

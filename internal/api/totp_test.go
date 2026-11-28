@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -88,24 +89,34 @@ func TestEnforcedTOTPSetupCompletesBeforeLogin(t *testing.T) {
 	}
 
 	loginRec = httptest.NewRecorder()
-	if err := a.login(loginRec, httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody))); err == nil {
-		t.Fatal("login without an authenticator code succeeded")
+	if err := a.login(loginRec, httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody))); err != nil {
+		t.Fatal(err)
 	}
-	loginBody, _ = json.Marshal(map[string]string{"username": "staff", "password": "long-enough-password", "totp_code": code})
-	loginRec = httptest.NewRecorder()
-	if err := a.login(loginRec, httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody))); err == nil {
+	var challenge struct {
+		Required bool   `json:"totp_required"`
+		Token    string `json:"login_token"`
+	}
+	if err := json.Unmarshal(loginRec.Body.Bytes(), &challenge); err != nil {
+		t.Fatal(err)
+	}
+	if !challenge.Required || challenge.Token == "" || len(loginRec.Result().Cookies()) != 0 {
+		t.Fatalf("password step did not leave sign-in pending: %+v", challenge)
+	}
+	totpBody, _ := json.Marshal(map[string]string{"login_token": challenge.Token, "code": code})
+	totpRec := httptest.NewRecorder()
+	if err := a.loginTOTP(totpRec, httptest.NewRequest(http.MethodPost, "/api/auth/totp/login", bytes.NewReader(totpBody))); err == nil {
 		t.Fatal("reusing a previously accepted authenticator code succeeded")
 	}
 	nextCode, err := totpCode(setup.Secret, uint64(time.Now().Unix()/30+1))
 	if err != nil {
 		t.Fatal(err)
 	}
-	loginBody, _ = json.Marshal(map[string]string{"username": "staff", "password": "long-enough-password", "totp_code": nextCode})
-	loginRec = httptest.NewRecorder()
-	if err := a.login(loginRec, httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(loginBody))); err != nil {
+	totpBody, _ = json.Marshal(map[string]string{"login_token": challenge.Token, "code": nextCode})
+	totpRec = httptest.NewRecorder()
+	if err := a.loginTOTP(totpRec, httptest.NewRequest(http.MethodPost, "/api/auth/totp/login", bytes.NewReader(totpBody))); err != nil {
 		t.Fatal(err)
 	}
-	if len(loginRec.Result().Cookies()) == 0 {
+	if len(totpRec.Result().Cookies()) == 0 {
 		t.Fatal("valid authenticator code did not complete login")
 	}
 }
@@ -143,6 +154,17 @@ func TestUserCanEnableAndDisableTOTP(t *testing.T) {
 	}
 
 	body, _ = json.Marshal(map[string]string{"password": "long-enough-password", "code": code})
+	if err := env.Store.SetSetting(settingTOTPEnforced, "1"); err != nil {
+		t.Fatal(err)
+	}
+	err = a.disableTOTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/auth/totp/disable", bytes.NewReader(body)), principal)
+	apiErr, ok := err.(*Error)
+	if !ok || apiErr.Status != http.StatusForbidden || !strings.Contains(apiErr.Msg, "cannot be disabled") {
+		t.Fatalf("disabling enforced TOTP error = %v, want explicit 403", err)
+	}
+	if err := env.Store.SetSetting(settingTOTPEnforced, "0"); err != nil {
+		t.Fatal(err)
+	}
 	if err := a.disableTOTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/auth/totp/disable", bytes.NewReader(body)), principal); err == nil {
 		t.Fatal("reusing the setup code to disable TOTP succeeded")
 	}

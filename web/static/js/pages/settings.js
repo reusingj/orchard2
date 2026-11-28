@@ -24,11 +24,12 @@ async function security(host, ctx) {
   const s = await loadSettings();
   const user = session.me.user;
   const admin = can("admin");
+  const enforced = s.settings.totp_enforced === "1";
   host.innerHTML = html`<div class="stack" style="max-width:820px">
     <section class="panel panel-pad"><h3>Authenticator app</h3>
       <p>${user.totp_enabled ? "Two-factor authentication is enabled for your account." : "Protect your account with a time-based one-time password (TOTP), supported by Google Authenticator and similar apps."}</p>
       ${user.totp_enabled
-        ? html`<button class="btn" type="button" id="totp-disable">Turn off two-factor authentication</button>`
+        ? html`${enforced ? html`<p class="hint">Your administrator requires two-factor authentication. Turning it off is blocked.</p>` : ""}<button class="btn" type="button" id="totp-disable">Turn off two-factor authentication</button>`
         : html`<button class="btn btn-primary" type="button" id="totp-enable">Set up authenticator app</button>`}
     </section>
     ${admin ? html`<section class="panel panel-pad"><h3>System-wide policy</h3>
@@ -127,12 +128,6 @@ async function general(host, ctx) {
     if (!s.public_url_locked) keys.push("public_url");
     try { await saveSettings(e.target, keys); } catch (err) { toastError(err); }
   });
-  $("#brand-logo-file", host)?.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const preview = $("#brand-preview", host);
-    preview.src = URL.createObjectURL(file);
-  });
   $("#brand-upload", host)?.addEventListener("click", async () => {
     const file = $("#brand-logo-file", host).files[0];
     if (!file) {
@@ -141,9 +136,7 @@ async function general(host, ctx) {
     }
     try {
       await api.put("/api/settings", { brand_logo: await fileToBase64(file) });
-      $("#brand-preview", host).src = `/api/brand/logo?updated=${Date.now()}`;
-      toast("Brand image changed");
-      ctx.refresh();
+      await reloadWithSuccessToast("Brand image changed", ctx.refresh);
     } catch (err) {
       toastError(err);
     }
@@ -152,14 +145,22 @@ async function general(host, ctx) {
     if (!(await confirmDialog("Reset the brand image?", "The default Orchard image will be used again.", { confirmLabel: "Reset" }))) return;
     try {
       await api.put("/api/settings", { brand_logo: "" });
-      $("#brand-preview", host).src = `/static/icon.svg?updated=${Date.now()}`;
-      $("#brand-reset", host).disabled = true;
-      toast("Brand image reset");
-      ctx.refresh();
+      await reloadWithSuccessToast("Brand image reset", ctx.refresh);
     } catch (err) {
       toastError(err);
     }
   });
+}
+
+async function reloadWithSuccessToast(message, refresh) {
+  try {
+    sessionStorage.setItem("orchard-success-toast", message);
+    window.location.reload();
+  } catch {
+    try { sessionStorage.removeItem("orchard-success-toast"); } catch {}
+    await refresh();
+    toast(message);
+  }
 }
 
 async function schedule(host) {

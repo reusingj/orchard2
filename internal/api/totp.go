@@ -30,6 +30,11 @@ type pendingTOTPSetup struct {
 	Forced    bool
 }
 
+type pendingTOTPLogin struct {
+	UserID    int64
+	ExpiresAt time.Time
+}
+
 func newTOTPSecret() (string, error) {
 	random := make([]byte, 20)
 	if _, err := rand.Read(random); err != nil {
@@ -142,6 +147,35 @@ func (a *API) peekPendingTOTP(token string, forced bool) (pendingTOTPSetup, bool
 	return pending, true
 }
 
+func (a *API) newTOTPLoginChallenge(userID int64) (string, error) {
+	random := make([]byte, 32)
+	if _, err := rand.Read(random); err != nil {
+		return "", err
+	}
+	token := hex.EncodeToString(random)
+	a.totpMu.Lock()
+	now := time.Now()
+	for key, pending := range a.totpLogins {
+		if now.After(pending.ExpiresAt) {
+			delete(a.totpLogins, key)
+		}
+	}
+	a.totpLogins[token] = pendingTOTPLogin{UserID: userID, ExpiresAt: now.Add(5 * time.Minute)}
+	a.totpMu.Unlock()
+	return token, nil
+}
+
+func (a *API) peekTOTPLogin(token string) (pendingTOTPLogin, bool) {
+	a.totpMu.Lock()
+	defer a.totpMu.Unlock()
+	pending, ok := a.totpLogins[token]
+	if !ok || time.Now().After(pending.ExpiresAt) {
+		delete(a.totpLogins, token)
+		return pendingTOTPLogin{}, false
+	}
+	return pending, true
+}
+
 func (a *API) confirmPendingTOTP(token, code string, userID int64, forced bool) (*store.User, error) {
 	pending, ok := a.takePendingTOTP(token, userID, forced)
 	if !ok {
@@ -247,9 +281,55 @@ func (a *API) enrollTOTPAtLogin(w http.ResponseWriter, r *http.Request) error {
 	return ok(w, out)
 }
 
+func (a *API) loginTOTP(w http.ResponseWriter, r *http.Request) error {
+	ip := mdm.ClientIP(r, a.Cfg.TrustProxy)
+	if a.tooManyFailures(ip) {
+		return errf(http.StatusTooManyRequests, "too many attempts; try again in a few minutes")
+	}
+	var req struct {
+		LoginToken string `json:"login_token"`
+		Code       string `json:"code"`
+	}
+	if err := decode(r, &req); err != nil {
+		return err
+	}
+	challenge, found := a.peekTOTPLogin(req.LoginToken)
+	if !found {
+		return errf(http.StatusUnauthorized, "sign-in verification expired; start again")
+	}
+	u, err := a.Store.GetUser(challenge.UserID)
+	if err != nil || u.Disabled || !u.TOTPEnabled {
+		return errf(http.StatusUnauthorized, "sign-in verification expired; start again")
+	}
+	counter, valid := matchingTOTPCounter(u.TOTPSecret, req.Code, time.Now())
+	if valid {
+		valid, err = a.Store.UseTOTPCounter(u.ID, counter)
+		if err != nil {
+			return err
+		}
+	}
+	if !valid {
+		a.recordFailure(ip)
+		_ = a.Store.InsertAudit(&store.AuditEntry{Actor: u.Username, Action: "auth.login_failed", IP: ip, Details: "invalid or reused authenticator code"})
+		return errf(http.StatusUnauthorized, "incorrect authenticator code")
+	}
+	out, err := a.startSession(w, r, u)
+	if err != nil {
+		return err
+	}
+	a.totpMu.Lock()
+	delete(a.totpLogins, req.LoginToken)
+	a.totpMu.Unlock()
+	_ = a.Store.InsertAudit(&store.AuditEntry{Actor: u.Username, Action: "auth.login", IP: ip})
+	return ok(w, out)
+}
+
 func (a *API) disableTOTP(w http.ResponseWriter, r *http.Request, p *Principal) error {
 	if p.Kind != "session" {
 		return badRequest("API keys cannot configure two-factor authentication")
+	}
+	if a.Store.GetSettingBool(settingTOTPEnforced, false) {
+		return errf(http.StatusForbidden, "two-factor authentication is required by your administrator and cannot be disabled")
 	}
 	var req struct {
 		Password string `json:"password"`
