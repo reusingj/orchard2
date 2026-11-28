@@ -168,12 +168,33 @@ function loginPage() {
   authPage("Sign in", "Sign in to manage your iPhone and iPad fleet.", html`<form id="login-form">
     <label class="field"><span>Username</span><input type="text" name="username" autocomplete="username" required autofocus></label>
     <label class="field"><span>Password</span><input type="password" name="password" autocomplete="current-password" required></label>
+    <label class="field"><span>Authenticator code <small class="hint">(if enabled)</small></span><input type="text" name="totp_code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6"></label>
     <button class="btn btn-primary" style="width:100%" type="submit">Sign in</button></form>`);
   $("#login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = e.target;
     try {
-      const res = await api.post("/api/auth/login", { username: f.username.value, password: f.password.value }, { allow401: true });
+      const res = await api.post("/api/auth/login", { username: f.username.value, password: f.password.value, totp_code: f.totp_code.value }, { allow401: true });
+      if (res.totp_setup_required) return forcedTOTPSetupPage(res);
+      session.csrf = res.csrf;
+      await loadMe();
+      shell();
+    } catch (err) { toastError(err); }
+  });
+}
+
+function forcedTOTPSetupPage(setup) {
+  authPage("Set up two-factor authentication", "Your organization requires an authenticator app. Set it up now to finish signing in.", html`<form id="totp-enroll-form">
+    <div style="text-align:center"><img src="${setup.qr_data}" alt="Authenticator setup QR code" width="220" height="220"></div>
+    <p class="hint">Scan with Google Authenticator or another TOTP app. If you cannot scan the QR code, enter this key manually:</p>
+    <p class="code">${setup.secret}</p>
+    <label class="field"><span>Authenticator code</span><input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required autofocus></label>
+    <button class="btn btn-primary" style="width:100%" type="submit">Verify and sign in</button></form>`);
+  $("#totp-enroll-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    try {
+      const res = await api.post("/api/auth/totp/enroll", { setup_token: setup.setup_token, code: form.code.value }, { allow401: true });
       session.csrf = res.csrf;
       await loadMe();
       shell();

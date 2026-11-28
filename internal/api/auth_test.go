@@ -65,3 +65,35 @@ func TestSetupStoresOrganizationNameAbbreviationAndBrandLogo(t *testing.T) {
 		t.Fatal("served brand logo differs from uploaded PNG")
 	}
 }
+
+func TestPutSettingsUpdatesAndResetsBrandLogo(t *testing.T) {
+	env := testenv.New(t)
+	a := New(Deps{Cfg: &config.Config{}, Store: env.Store, MDM: env.MDM})
+	var logo bytes.Buffer
+	pixels := image.NewRGBA(image.Rect(0, 0, 2, 2))
+	pixels.SetRGBA(0, 0, color.RGBA{R: 200, G: 20, B: 30, A: 255})
+	if err := png.Encode(&logo, pixels); err != nil {
+		t.Fatal(err)
+	}
+	encoded := base64.StdEncoding.EncodeToString(logo.Bytes())
+
+	body, _ := json.Marshal(map[string]string{"brand_logo": encoded})
+	req := httptest.NewRequest(http.MethodPut, "/api/settings", bytes.NewReader(body))
+	rec := httptest.NewRecorder()
+	if err := a.putSettings(rec, req, &Principal{Role: "admin"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := env.Store.GetSetting(brandLogoSetting, ""); got != encoded {
+		t.Fatal("settings update did not replace the brand logo")
+	}
+
+	body, _ = json.Marshal(map[string]string{"brand_logo": ""})
+	req = httptest.NewRequest(http.MethodPut, "/api/settings", bytes.NewReader(body))
+	rec = httptest.NewRecorder()
+	if err := a.putSettings(rec, req, &Principal{Role: "admin"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := env.Store.GetSetting(brandLogoSetting, ""); got != "" {
+		t.Fatal("settings update did not reset the brand logo")
+	}
+}

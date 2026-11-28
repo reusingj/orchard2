@@ -660,7 +660,7 @@ var publicSettings = []string{
 	mdm.SettingInventoryHours, mdm.SettingTelemetryMinutes, mdm.SettingLostModeLocMinutes, mdm.SettingSignProfiles, mdm.SettingSCEPValidityDays,
 	mdm.SettingCommandRetention, mdm.SettingTelemetryRetention, mdm.SettingPortalEnabled, mdm.SettingADESyncMinutes, mdm.SettingExtraTrustCerts,
 	mdm.SettingEnrollConsentText, mdm.SettingCommandExpiryDays, mdm.SettingRecordConnectionIPs, "compliance_default", "ade_allow_unknown_serials",
-	mdm.SettingAgentReportSeconds,
+	mdm.SettingAgentReportSeconds, settingTOTPEnforced,
 }
 
 func (a *API) getSettings(w http.ResponseWriter, r *http.Request, p *Principal) error {
@@ -668,7 +668,13 @@ func (a *API) getSettings(w http.ResponseWriter, r *http.Request, p *Principal) 
 	for _, k := range publicSettings {
 		out[k] = a.MDM.Setting(k)
 	}
-	return ok(w, map[string]any{"settings": out, "public_url_locked": a.Cfg.PublicURL != "", "effective_public_url": a.MDM.PublicURL(), "tls_mode": a.TLSMode})
+	return ok(w, map[string]any{
+		"settings":              out,
+		"public_url_locked":     a.Cfg.PublicURL != "",
+		"effective_public_url":  a.MDM.PublicURL(),
+		"tls_mode":              a.TLSMode,
+		"brand_logo_configured": a.Store.GetSetting(brandLogoSetting, "") != "",
+	})
 }
 
 func (a *API) putSettings(w http.ResponseWriter, r *http.Request, p *Principal) error {
@@ -680,13 +686,37 @@ func (a *API) putSettings(w http.ResponseWriter, r *http.Request, p *Principal) 
 	for _, k := range publicSettings {
 		allowed[k] = true
 	}
+	allowed["brand_logo"] = true
 	changed := map[string]string{}
 	for k, v := range req {
 		if !allowed[k] {
 			return badRequest("unknown setting %q", k)
 		}
+		if k == "brand_logo" {
+			if v == "" {
+				if err := a.Store.DeleteSetting(brandLogoSetting); err != nil {
+					return err
+				}
+				changed[k] = "(removed)"
+				continue
+			}
+			if err := a.saveBrandLogo(v); err != nil {
+				return err
+			}
+			changed[k] = "(updated)"
+			continue
+		}
 		v = strings.TrimSpace(v)
 		switch k {
+		case settingTOTPEnforced:
+			switch strings.ToLower(v) {
+			case "1", "true":
+				v = "1"
+			case "0", "false", "":
+				v = "0"
+			default:
+				return badRequest("%s must be true or false", k)
+			}
 		case mdm.SettingPublicURL:
 			v = strings.TrimRight(v, "/")
 			if v != "" && !strings.HasPrefix(v, "https://") && !strings.HasPrefix(v, "http://") {
@@ -1015,4 +1045,3 @@ func (a *API) dashboard(w http.ResponseWriter, r *http.Request, p *Principal) er
 		"attention": map[string]any{"low_battery": nonEmpty(lowBattery), "low_storage": nonEmpty(lowStorage), "stale": nonEmpty(stale), "lost_mode": nonEmpty(lost)},
 	})
 }
-

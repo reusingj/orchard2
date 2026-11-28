@@ -162,6 +162,7 @@ func (a *API) login(w http.ResponseWriter, r *http.Request) error {
 	var req struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
+		TOTPCode string `json:"totp_code"`
 	}
 	if err := decode(r, &req); err != nil {
 		return err
@@ -171,6 +172,28 @@ func (a *API) login(w http.ResponseWriter, r *http.Request) error {
 		a.recordFailure(ip)
 		_ = a.Store.InsertAudit(&store.AuditEntry{Actor: req.Username, Action: "auth.login_failed", IP: ip})
 		return errf(http.StatusUnauthorized, "incorrect username or password")
+	}
+	if u.TOTPEnabled {
+		counter, valid := matchingTOTPCounter(u.TOTPSecret, req.TOTPCode, time.Now())
+		if valid {
+			valid, err = a.Store.UseTOTPCounter(u.ID, counter)
+			if err != nil {
+				return err
+			}
+		}
+		if !valid {
+			a.recordFailure(ip)
+			_ = a.Store.InsertAudit(&store.AuditEntry{Actor: u.Username, Action: "auth.login_failed", IP: ip, Details: "invalid or reused authenticator code"})
+			return errf(http.StatusUnauthorized, "incorrect username, password, or authenticator code")
+		}
+	}
+	if !u.TOTPEnabled && a.Store.GetSettingBool(settingTOTPEnforced, false) {
+		setup, err := a.newPendingTOTP(u.ID, true, u.Username)
+		if err != nil {
+			return err
+		}
+		setup["totp_setup_required"] = true
+		return ok(w, setup)
 	}
 	out, err := a.startSession(w, r, u)
 	if err != nil {

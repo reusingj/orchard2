@@ -574,5 +574,10 @@ CREATE TABLE saved_command_quicksend_groups (
 	PRIMARY KEY (saved_command_id, group_id)
 )
 `,
+	// 5: authenticator-based two-factor authentication
+	`
+ALTER TABLE users ADD COLUMN totp_secret TEXT NOT NULL DEFAULT '';
+ALTER TABLE users ADD COLUMN totp_enabled INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN totp_last_counter INTEGER NOT NULL DEFAULT -1
+`,
 }
-

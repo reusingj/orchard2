@@ -134,26 +134,30 @@ func (s *Store) DeleteKeyPair(name string) error {
 
 // User is an administrator account.
 type User struct {
-	ID           int64  `json:"id"`
-	Username     string `json:"username"`
-	DisplayName  string `json:"display_name"`
-	Email        string `json:"email"`
-	PasswordHash string `json:"-"`
-	Role         string `json:"role"`
-	Disabled     bool   `json:"disabled"`
-	CreatedAt    int64  `json:"created_at"`
-	LastLogin    int64  `json:"last_login"`
+	ID              int64  `json:"id"`
+	Username        string `json:"username"`
+	DisplayName     string `json:"display_name"`
+	Email           string `json:"email"`
+	PasswordHash    string `json:"-"`
+	TOTPSecret      string `json:"-"`
+	TOTPEnabled     bool   `json:"totp_enabled"`
+	TOTPLastCounter int64  `json:"-"`
+	Role            string `json:"role"`
+	Disabled        bool   `json:"disabled"`
+	CreatedAt       int64  `json:"created_at"`
+	LastLogin       int64  `json:"last_login"`
 }
 
-const userCols = `id, username, display_name, email, password_hash, role, disabled, created_at, last_login`
+const userCols = `id, username, display_name, email, password_hash, totp_secret, totp_enabled, totp_last_counter, role, disabled, created_at, last_login`
 
 func scanUser(r scanner) (*User, error) {
 	u := &User{}
-	var disabled int
-	if err := r.Scan(&u.ID, &u.Username, &u.DisplayName, &u.Email, &u.PasswordHash, &u.Role, &disabled, &u.CreatedAt, &u.LastLogin); err != nil {
+	var disabled, totpEnabled int
+	if err := r.Scan(&u.ID, &u.Username, &u.DisplayName, &u.Email, &u.PasswordHash, &u.TOTPSecret, &totpEnabled, &u.TOTPLastCounter, &u.Role, &disabled, &u.CreatedAt, &u.LastLogin); err != nil {
 		return nil, notFound(err)
 	}
 	u.Disabled = disabled == 1
+	u.TOTPEnabled = totpEnabled == 1
 	return u, nil
 }
 
@@ -167,8 +171,8 @@ func (s *Store) CountUsers() (int, error) {
 // CreateUser inserts a user.
 func (s *Store) CreateUser(u *User) error {
 	u.CreatedAt = Now()
-	res, err := s.db.Exec(`INSERT INTO users(username, display_name, email, password_hash, role, disabled, created_at) VALUES(?,?,?,?,?,?,?)`,
-		u.Username, u.DisplayName, u.Email, u.PasswordHash, u.Role, boolInt(u.Disabled), u.CreatedAt)
+	res, err := s.db.Exec(`INSERT INTO users(username, display_name, email, password_hash, totp_secret, totp_enabled, totp_last_counter, role, disabled, created_at) VALUES(?,?,?,?,?,?,?,?,?,?)`,
+		u.Username, u.DisplayName, u.Email, u.PasswordHash, u.TOTPSecret, boolInt(u.TOTPEnabled), u.TOTPLastCounter, u.Role, boolInt(u.Disabled), u.CreatedAt)
 	if err != nil {
 		return err
 	}
@@ -178,9 +182,19 @@ func (s *Store) CreateUser(u *User) error {
 
 // UpdateUser saves profile fields (not the password unless PasswordHash is set).
 func (s *Store) UpdateUser(u *User) error {
-	_, err := s.db.Exec(`UPDATE users SET username=?, display_name=?, email=?, role=?, disabled=?, password_hash=? WHERE id=?`,
-		u.Username, u.DisplayName, u.Email, u.Role, boolInt(u.Disabled), u.PasswordHash, u.ID)
+	_, err := s.db.Exec(`UPDATE users SET username=?, display_name=?, email=?, role=?, disabled=?, password_hash=?, totp_secret=?, totp_enabled=?, totp_last_counter=? WHERE id=?`,
+		u.Username, u.DisplayName, u.Email, u.Role, boolInt(u.Disabled), u.PasswordHash, u.TOTPSecret, boolInt(u.TOTPEnabled), u.TOTPLastCounter, u.ID)
 	return err
+}
+
+// UseTOTPCounter atomically prevents a valid authenticator code from being reused.
+func (s *Store) UseTOTPCounter(userID, counter int64) (bool, error) {
+	res, err := s.db.Exec(`UPDATE users SET totp_last_counter=? WHERE id=? AND totp_enabled=1 AND totp_last_counter<?`, counter, userID, counter)
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	return n == 1, err
 }
 
 // TouchUserLogin records a login.
@@ -352,4 +366,3 @@ func (s *Store) CleanupExpired() {
 }
 
 var _ = sql.ErrNoRows
-

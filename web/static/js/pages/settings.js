@@ -1,7 +1,7 @@
 import { html, $, $$, api, can, session, ago, fmtDate, fmtTime, modal, toast, toastError, confirmDialog, fileToBase64, plural, copyText, emptyState, bytes } from "../lib.js";
 
 const TABS = [
-  ["general", "General", "read"], ["schedule", "Schedule & data", "read"], ["push", "Apple Push", "read"], ["vpp", "Apps and Books", "read"],
+  ["general", "General", "read"], ["security", "Security", "read"], ["schedule", "Schedule & data", "read"], ["push", "Apple Push", "read"], ["vpp", "Apps and Books", "read"],
   ["users", "Administrators", "admin"], ["apikeys", "API keys", "admin"], ["webhooks", "Webhooks", "read"], ["about", "Certificates & about", "read"],
 ];
 
@@ -12,13 +12,69 @@ export async function render(ctx) {
     <nav class="tabs" aria-label="Settings sections">${TABS.filter((t) => can(t[2])).map(([id, label]) => html`<a href="#/settings/${id}" aria-selected="${id === tab}">${label}</a>`)}</nav>
     <div id="tab"></div>`.s;
   const host = $("#tab", root);
-  const pages = { general, schedule, push, vpp, users, apikeys, webhooks, about };
+  const pages = { general, security, schedule, push, vpp, users, apikeys, webhooks, about };
   await (pages[tab] || general)(host, ctx);
 }
 
 const ro = () => (can("admin") ? "" : "disabled");
 
 async function loadSettings() { return api.get("/api/settings"); }
+
+async function security(host, ctx) {
+  const s = await loadSettings();
+  const user = session.me.user;
+  const admin = can("admin");
+  host.innerHTML = html`<div class="stack" style="max-width:820px">
+    <section class="panel panel-pad"><h3>Authenticator app</h3>
+      <p>${user.totp_enabled ? "Two-factor authentication is enabled for your account." : "Protect your account with a time-based one-time password (TOTP), supported by Google Authenticator and similar apps."}</p>
+      ${user.totp_enabled
+        ? html`<button class="btn" type="button" id="totp-disable">Turn off two-factor authentication</button>`
+        : html`<button class="btn btn-primary" type="button" id="totp-enable">Set up authenticator app</button>`}
+    </section>
+    ${admin ? html`<section class="panel panel-pad"><h3>System-wide policy</h3>
+      <form id="totp-policy">
+        <label class="check"><input type="checkbox" name="totp_enforced" ${s.settings.totp_enforced === "1" ? "checked" : ""}><span>Require two-factor authentication for all user accounts<small>Users without an authenticator will be prompted to set one up at their next sign-in. Existing sessions remain active; API keys are unaffected.</small></span></label>
+        <button class="btn btn-primary" type="submit">Save policy</button>
+      </form>
+    </section>` : ""}
+  </div>`.s;
+  $("#totp-enable", host)?.addEventListener("click", async () => {
+    try {
+      const setup = await api.post("/api/auth/totp/setup");
+      modal({ title: "Set up authenticator app",
+        body: html`<p>Scan this QR code with your authenticator app, then enter the six-digit code it displays.</p>
+          <div style="text-align:center"><img src="${setup.qr_data}" alt="Authenticator setup QR code" width="220" height="220"></div>
+          <p class="hint">If you cannot scan the QR code, enter this key manually:</p><p class="code">${setup.secret}</p>
+          <label class="field"><span>Authenticator code</span><input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>`,
+        actions: [{ id: "cancel", label: "Cancel" }, { id: "confirm", label: "Verify and enable", kind: "primary", submit: true, onClick: async (m) => {
+          const code = $("input[name=code]", m.el).value;
+          await api.post("/api/auth/totp/confirm", { setup_token: setup.setup_token, code });
+          user.totp_enabled = true;
+          toast("Two-factor authentication enabled");
+          ctx.refresh();
+        } }] });
+    } catch (err) { toastError(err); }
+  });
+  $("#totp-disable", host)?.addEventListener("click", () => modal({ title: "Turn off two-factor authentication",
+    body: html`<p>Confirm with your password and current authenticator code.</p>
+      <label class="field"><span>Password</span><input type="password" name="password" autocomplete="current-password" required></label>
+      <label class="field"><span>Authenticator code</span><input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>`,
+    actions: [{ id: "cancel", label: "Cancel" }, { id: "disable", label: "Turn off", kind: "danger", submit: true, onClick: async (m) => {
+      const form = $("form", m.el);
+      await api.post("/api/auth/totp/disable", { password: form.elements.password.value, code: form.elements.code.value });
+      user.totp_enabled = false;
+      toast("Two-factor authentication disabled");
+      ctx.refresh();
+    } }] }));
+  $("#totp-policy", host)?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      await api.put("/api/settings", { totp_enforced: e.target.totp_enforced.checked ? "1" : "0" });
+      toast("Two-factor policy saved");
+      ctx.refresh();
+    } catch (err) { toastError(err); }
+  });
+}
 
 async function saveSettings(form, keys) {
   const body = {};
@@ -36,6 +92,16 @@ async function general(host, ctx) {
   const v = s.settings;
   const on = (k) => (v[k] === "1" || v[k] === "true" ? "checked" : "");
   host.innerHTML = html`<form class="stack" id="f" style="max-width:820px">
+    <section class="panel panel-pad"><h3>Brand image</h3>
+      <div class="row" style="align-items:flex-start">
+        <div style="width:96px;height:96px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;overflow:hidden">
+          <img id="brand-preview" src="/api/brand/logo" alt="Current brand logo" style="max-width:84px;max-height:84px;object-fit:contain">
+        </div>
+        <div style="flex:1;max-width:420px">
+          ${can("admin") ? html`<label class="field"><span>Brand logo and Apple touch icon (PNG)</span><input type="file" id="brand-logo-file" accept="image/png"><small class="hint">PNG, up to 1 MB and 2048 × 2048 pixels. This replaces the image added during setup.</small></label>
+          <div class="row"><button type="button" class="btn btn-sm btn-primary" id="brand-upload">Change image</button><button type="button" class="btn btn-sm btn-ghost" id="brand-reset" ${s.brand_logo_configured ? "" : "disabled"}>Reset to default</button></div>` : html`<p class="hint">Brand image configured by an administrator.</p>`}
+        </div>
+      </div></section>
     <section class="panel panel-pad"><h3>Organization</h3>
       <div class="inline-fields"><label class="field"><span>Organization name</span><input type="text" name="org_name" value="${v.org_name}" ${ro()}></label>
         <label class="field"><span>Organization name abbreviation</span><input type="text" name="org_name_abbreviation" value="${v.org_name_abbreviation}" ${ro()}></label>
@@ -60,6 +126,39 @@ async function general(host, ctx) {
     const keys = ["org_name", "org_name_abbreviation", "support_email", "support_phone", "support_url", "enroll_require_token", "portal_enabled", "sign_profiles", "enroll_consent_text", "extra_trust_certs", "compliance_default", "ade_allow_unknown_serials"];
     if (!s.public_url_locked) keys.push("public_url");
     try { await saveSettings(e.target, keys); } catch (err) { toastError(err); }
+  });
+  $("#brand-logo-file", host)?.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const preview = $("#brand-preview", host);
+    preview.src = URL.createObjectURL(file);
+  });
+  $("#brand-upload", host)?.addEventListener("click", async () => {
+    const file = $("#brand-logo-file", host).files[0];
+    if (!file) {
+      toast("Choose a PNG image", "err");
+      return;
+    }
+    try {
+      await api.put("/api/settings", { brand_logo: await fileToBase64(file) });
+      $("#brand-preview", host).src = `/api/brand/logo?updated=${Date.now()}`;
+      toast("Brand image changed");
+      ctx.refresh();
+    } catch (err) {
+      toastError(err);
+    }
+  });
+  $("#brand-reset", host)?.addEventListener("click", async () => {
+    if (!(await confirmDialog("Reset the brand image?", "The default Orchard image will be used again.", { confirmLabel: "Reset" }))) return;
+    try {
+      await api.put("/api/settings", { brand_logo: "" });
+      $("#brand-preview", host).src = `/static/icon.svg?updated=${Date.now()}`;
+      $("#brand-reset", host).disabled = true;
+      toast("Brand image reset");
+      ctx.refresh();
+    } catch (err) {
+      toastError(err);
+    }
   });
 }
 

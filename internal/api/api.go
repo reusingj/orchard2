@@ -55,11 +55,14 @@ type API struct {
 
 	loginMu    sync.Mutex
 	loginFails map[string][]time.Time
+
+	totpMu      sync.Mutex
+	totpPending map[string]pendingTOTPSetup
 }
 
 // New creates the API.
 func New(d Deps) *API {
-	return &API{Deps: d, loginFails: map[string][]time.Time{}}
+	return &API{Deps: d, loginFails: map[string][]time.Time{}, totpPending: map[string]pendingTOTPSetup{}}
 }
 
 // Perm is a permission level.
@@ -226,11 +229,15 @@ func (a *API) Register(mux *http.ServeMux) {
 	// authentication
 	a.public(mux, "GET /api/auth/status", a.authStatus)
 	a.public(mux, "POST /api/auth/login", a.login)
+	a.public(mux, "POST /api/auth/totp/enroll", a.enrollTOTPAtLogin)
 	a.public(mux, "POST /api/auth/setup", a.setup)
 	a.public(mux, "GET /api/brand/{asset}", a.brandImage)
 	a.handle(mux, "POST /api/auth/logout", PermRead, a.logout)
 	a.handle(mux, "GET /api/auth/me", PermRead, a.me)
 	a.handle(mux, "POST /api/auth/password", PermRead, a.changePassword)
+	a.handle(mux, "POST /api/auth/totp/setup", PermRead, a.beginTOTPSetup)
+	a.handle(mux, "POST /api/auth/totp/confirm", PermRead, a.confirmTOTPSetup)
+	a.handle(mux, "POST /api/auth/totp/disable", PermRead, a.disableTOTP)
 
 	// dashboard & system
 	a.handle(mux, "GET /api/dashboard", PermRead, a.dashboard)

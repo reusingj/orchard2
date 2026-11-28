@@ -18,6 +18,7 @@ https://github.com/yeungalan/orchard-mdm
 - Added VPP asset and license management, including license disassociation.
 - Added resize horizontal functionality for better use of textareas in payload cards
 - Changed default declaration profile identifier from com.orchardmdm.declaration.randomstring to com.yourdomain.yoursubdomain.declaraion.randomstring
+- Added 2FA per Authenticator App (e.g. Google Authenticator), can be enforced system-wide by admins
 
 **Orchard2 deliberately cannot wipe devices.** See [No remote wipe](#no-remote-wipe).
 
@@ -72,6 +73,7 @@ https://github.com/yeungalan/orchard-mdm
 
 **Operations**
 - Web console with roles (admin, operator, helpdesk, read-only), an audit log, and light/dark themes
+- Optional TOTP two-factor authentication with authenticator apps; administrators can require setup for all accounts at next sign-in
 - REST API with API keys ([reference](docs/API.md)) and HMAC-signed webhooks
 - Single static binary with embedded SQLite (no CGO) and assets. Built-in Let's Encrypt, or run behind a reverse proxy
 
@@ -303,11 +305,13 @@ sudo ./orchard -url https://mdm.example.com -acme-domains mdm.example.com -acme-
 
 1. Open `https://mdm.example.com`. On first start the server log prints a **setup code**; enter it to create the first administrator
    (or pass `-admin-user` / `-admin-password`).
-2. **Settings → Apple Push**: create a certificate request, have it signed, upload it at
+2. **Settings → Security**: optionally enroll an authenticator app for TOTP sign-in. Administrators can enforce two-factor setup
+   for all accounts; users who are not enrolled will be prompted at their next sign-in.
+3. **Settings → Apple Push**: create a certificate request, have it signed, upload it at
    [identity.apple.com/pushcert](https://identity.apple.com/pushcert/), then upload Apple's certificate back to Orchard.
    Note the Apple Account you used: renewals must use the same one.
-3. **Enrollment → New enrollment link**, then open the link in Safari on an iPhone or iPad (or scan its QR code) and install the profile.
-4. Build profiles, add apps and compliance policies, and assign them to groups. Devices pick changes up within a minute.
+4. **Enrollment → New enrollment link**, then open the link in Safari on an iPhone or iPad (or scan its QR code) and install the profile.
+5. Build profiles, add apps and compliance policies, and assign them to groups. Devices pick changes up within a minute.
 
 ### Docker
 
