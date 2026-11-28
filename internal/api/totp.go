@@ -109,8 +109,8 @@ func (a *API) newPendingTOTP(userID int64, forced bool, username string) (map[st
 	a.totpPending[token] = pendingTOTPSetup{UserID: userID, Secret: secret, ExpiresAt: now.Add(10 * time.Minute), Forced: forced}
 	a.totpMu.Unlock()
 
-	label := url.QueryEscape("Orchard:" + username)
-	uri := "otpauth://totp/" + label + "?secret=" + secret + "&issuer=Orchard&algorithm=SHA1&digits=6&period=30"
+	label := url.QueryEscape("Orchard2:" + username)
+	uri := "otpauth://totp/" + label + "?secret=" + secret + "&issuer=Orchard2&algorithm=SHA1&digits=6&period=30"
 	code, err := qr.Encode(uri, qr.M)
 	if err != nil {
 		return nil, err

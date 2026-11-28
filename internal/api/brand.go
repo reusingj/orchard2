@@ -39,9 +39,9 @@ func (a *API) brandImage(w http.ResponseWriter, r *http.Request) error {
 	fallback := ""
 	switch r.PathValue("asset") {
 	case "logo", "favicon":
-		fallback = "/static/icon.svg"
+		fallback = "/static/icon.png"
 	case "apple-touch-icon.png":
-		fallback = "/static/apple-touch-icon.png"
+		fallback = "/static/apple-touch-icon.png?v=2"
 	default:
 		http.NotFound(w, r)
 		return nil

@@ -53,11 +53,12 @@ func TestEnforcedTOTPSetupCompletesBeforeLogin(t *testing.T) {
 		SetupToken    string `json:"setup_token"`
 		Secret        string `json:"secret"`
 		QRData        string `json:"qr_data"`
+		OTPAuthURL    string `json:"otpauth_url"`
 	}
 	if err := json.Unmarshal(loginRec.Body.Bytes(), &setup); err != nil {
 		t.Fatal(err)
 	}
-	if !setup.SetupRequired || setup.SetupToken == "" || setup.Secret == "" || setup.QRData == "" {
+	if !setup.SetupRequired || setup.SetupToken == "" || setup.Secret == "" || setup.QRData == "" || !strings.Contains(setup.OTPAuthURL, "Orchard2") || !strings.Contains(setup.OTPAuthURL, "issuer=Orchard2") {
 		t.Fatalf("incomplete forced setup response: %+v", setup)
 	}
 	if len(loginRec.Result().Cookies()) != 0 {

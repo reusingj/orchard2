@@ -25,6 +25,7 @@ func TestSetupStoresOrganizationNameAbbreviationAndBrandLogo(t *testing.T) {
 	if err := png.Encode(&logo, pixels); err != nil {
 		t.Fatal(err)
 	}
+
 	encodedLogo := base64.StdEncoding.EncodeToString(logo.Bytes())
 	body, err := json.Marshal(map[string]string{
 		"setup_code":            a.SetupToken(),
@@ -63,6 +64,26 @@ func TestSetupStoresOrganizationNameAbbreviationAndBrandLogo(t *testing.T) {
 	}
 	if !bytes.Equal(imageRec.Body.Bytes(), logo.Bytes()) {
 		t.Fatal("served brand logo differs from uploaded PNG")
+	}
+}
+
+func TestBrandImageUsesNewDefaultIcons(t *testing.T) {
+	env := testenv.New(t)
+	a := New(Deps{Cfg: &config.Config{}, Store: env.Store, MDM: env.MDM})
+	for asset, want := range map[string]string{
+		"logo":                 "/static/icon.png",
+		"favicon":              "/static/icon.png",
+		"apple-touch-icon.png": "/static/apple-touch-icon.png?v=2",
+	} {
+		req := httptest.NewRequest(http.MethodGet, "/api/brand/"+asset, nil)
+		req.SetPathValue("asset", asset)
+		rec := httptest.NewRecorder()
+		if err := a.brandImage(rec, req); err != nil {
+			t.Fatal(err)
+		}
+		if rec.Code != http.StatusFound || rec.Header().Get("Location") != want {
+			t.Errorf("%s fallback = %d %q, want redirect to %q", asset, rec.Code, rec.Header().Get("Location"), want)
+		}
 	}
 }
 
